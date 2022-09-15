@@ -28,17 +28,40 @@ jobs:
 
     steps:
       # generate environment short name to match app 'namespace' used in Azure
-      - name: Environment short name
+      - uses: actions/github-script@v6
         id: env
-        run: |
-          echo "::set-output name=val::stg"
+        with:
+          script: |
+            switch(${{ inputs.environment }}) {
+              case "staging":
+                return "stg"
+              case "production":
+                return "prd"
+              default:
+                return "dev"
+            }
+          result-encoding: string
+
+      # make it easier to manage parameters
+      - uses: actions/github-script@v6
+        id: params
+        with:
+          script: |
+            return "
+              appName=${{ github.event.repository.name }}
+              managedEnvName=cae-ticc-${{ steps.env.outputs.result }}
+              apiManagerName=apim-ticc-${{ steps.env.outputs.result }}
+              imageName=${{ inputs.image-tag }}
+              mongoUri=${{ secrets.MONGO_URI }}
+              ghcrUser=${{ secrets.GHCR_USER }}
+              ghcrPat=${{ secrets.GHCR_PAT }}"
+          result-encoding: string
 
       - uses: actions/checkout@v3
 
       - name: Azure login
         uses: azure/login@v1
         with:
-          # creds: ${{ secrets.AZURE_CREDENTIALS }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -48,10 +71,9 @@ jobs:
         with:
           deploymentName: ${{ github.event.repository.name }}
           scope: resourcegroup
-          # subscriptionId: ${{ env.SUBSCRIPTION }}
-          # resourceGroupName: ${{ env.RESOURCE_GROUP }}
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          resourceGroupName: app-ticc-${{ steps.env.outputs.val }}-ae-rg
+          resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
           template: .github/bicep/main.bicep
-          parameters: .github/bicep/params.json appName=${{ github.event.repository.name }} managedEnvName=cae-ticc-${{ steps.env.outputs.val }} apiManagerName=apim-ticc-${{ steps.env.outputs.val }} imageName=${{ inputs.image-tag }} mongoUri=${{ secrets.MONGO_URI }} ghcrUser=${{ secrets.GHCR_USER }} ghcrPat=${{ secrets.GHCR_PAT }}
+          # parameters: .github/bicep/params.json appName=${{ github.event.repository.name }} managedEnvName=cae-ticc-${{ steps.env.outputs.val }} apiManagerName=apim-ticc-${{ steps.env.outputs.val }} imageName=${{ inputs.image-tag }} mongoUri=${{ secrets.MONGO_URI }} ghcrUser=${{ secrets.GHCR_USER }} ghcrPat=${{ secrets.GHCR_PAT }}
+          parameters: .github/bicep/params.json ${{ steps.params.outputs.result }}
           failOnStdErr: false
