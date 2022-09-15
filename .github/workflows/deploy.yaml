@@ -3,29 +3,15 @@
 #
 # The workflow will only run if commit message contains [tag:patch|minor|major]
 
-name: Deploy Update
+name: Deploy Container App
 
 on:
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   branches: [main]
   workflow_call:
     inputs:
       image-tag:
         required: true
         type: string
     # secrets:
-    #   BUF_USER:
-    #     required: true
-    #   BUF_PAT:
-    #     required: true
-    #   GH_USER:
-    #     required: true
-    #   GH_PAT:
-    #     required: true
-    #   GH_ORG:
-    #     required: true
 
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}
@@ -34,19 +20,23 @@ jobs:
   # ----------------------------------------------------
   # Deploy specified build
   # ----------------------------------------------------
-  deploy-staging:
+  deploy:
     runs-on: ubuntu-latest
-    environment: staging
-    env:
-      ENV: stg
+    environment: ${{ inputs.environment }}
     permissions:
       id-token: write
       contents: read
 
     steps:
+      # generate docker image tag using the new version
+      - name: Environment short name
+        id: env
+        run: |
+          echo "::set-output name=val::stg"
+
       - uses: actions/checkout@v3
 
-      - name: Azure Login
+      - name: Azure login
         uses: azure/login@v1
         with:
           # creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -62,7 +52,7 @@ jobs:
           # subscriptionId: ${{ env.SUBSCRIPTION }}
           # resourceGroupName: ${{ env.RESOURCE_GROUP }}
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          resourceGroupName: app-ticc-${{ env.ENV }}-ae-rg
+          resourceGroupName: app-ticc- ${{ steps.env.outputs.val }}-ae-rg
           template: .github/bicep/main.bicep
-          parameters: .github/bicep/params.json appName=${{ github.event.repository.name }} managedEnvName=cae-ticc-${{ env.ENV }} apiManagerName=apim-ticc-${{ env.ENV }} imageName=${{ inputs.image-tag }} mongoUri=${{ secrets.MONGO_URI }} ghcrUser=${{ secrets.GHCR_USER }} ghcrPat=${{ secrets.GHCR_PAT }}
+          parameters: .github/bicep/params.json appName=${{ github.event.repository.name }} managedEnvName=cae-ticc- ${{ steps.env.outputs.val }} apiManagerName=apim-ticc- ${{ steps.env.outputs.val }} imageName=${{ inputs.image-tag }} mongoUri=${{ secrets.MONGO_URI }} ghcrUser=${{ secrets.GHCR_USER }} ghcrPat=${{ secrets.GHCR_PAT }}
           failOnStdErr: false

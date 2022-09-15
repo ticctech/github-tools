@@ -3,36 +3,16 @@
 #
 # The workflow will only run if commit message contains [tag:patch|minor|major]
 
-name: Deploy Update
+name: Build Go container
 
 on:
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   branches: [main]
   workflow_call:
-    inputs:
-      username:
-        required: true
-        type: string
+    # inputs:
     # secrets:
-    #   BUF_USER:
-    #     required: true
-    #   BUF_PAT:
-    #     required: true
-    #   GH_USER:
-    #     required: true
-    #   GH_PAT:
-    #     required: true
-    #   GH_ORG:
-    #     required: true
     outputs:
       image-tag:
         description: Tag for the docker image
         value: ${{ jobs.build.outputs.image-tag }}
-        
-env:
-  IMAGE_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
   # ----------------------------------------------------
@@ -47,7 +27,7 @@ jobs:
       packages: write
     outputs:
       image-tag: ${{ steps.tag.outputs.image-tag }}
-      
+
     # only run if commit message contains versioning setting
     if: |
       contains(github.event.head_commit.message, '[tag:patch]')
@@ -113,7 +93,7 @@ jobs:
       - name: Generate image tag
         id: tag
         run: |
-          echo "::set-output name=image-tag::${{ env.IMAGE_REPO }}:${{ steps.version.outputs.version_tag }}"
+          echo "::set-output name=image-tag::ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}"
 
       # build and publish docker image
       - name: Build and push image
@@ -127,7 +107,7 @@ jobs:
             GH_PAT=${{ secrets.GH_PAT }}
             GH_ORG=${{ github.repository_owner }}
           push: true
-          tags: ${{ steps.tag.outputs.image-tag }}, ${{ env.IMAGE_REPO }}:latest
+          tags: ${{ steps.tag.outputs.image-tag }}, ghcr.io/${{ github.repository }}:latest
 
       - name: Create release
         uses: actions/github-script@v5
