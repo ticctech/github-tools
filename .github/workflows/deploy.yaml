@@ -6,15 +6,29 @@
 name: Deploy Update
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+    # secrets:
+    #   BUF_USER:
+    #     required: true
+    #   BUF_PAT:
+    #     required: true
+    #   GH_USER:
+    #     required: true
+    #   GH_PAT:
+    #     required: true
+    #   GH_ORG:
+    #     required: true
 
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}
-  # SUBSCRIPTION: 1278fa29-0ee5-4f10-a568-d00d37a86e03
-  # RESOURCE_GROUP: app-ticc-dev-ae-rg
 
 jobs:
   # ----------------------------------------------------
