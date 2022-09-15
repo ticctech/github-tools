@@ -26,7 +26,11 @@ on:
     #     required: true
     #   GH_ORG:
     #     required: true
-
+    outputs:
+      image-tag:
+        description: Tag for the docker image
+        value: ${{ jobs.build.outputs.image-tag }}
+        
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}
 
