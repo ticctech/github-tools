@@ -8,7 +8,8 @@ name: Build Go container
 on:
   workflow_call:
     # inputs:
-    secrets: inherit
+    # secrets:
+    #   inherit
     outputs:
       image-tag:
         description: Tag for the docker image

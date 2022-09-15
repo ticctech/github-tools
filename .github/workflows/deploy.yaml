@@ -13,7 +13,8 @@ on:
       image-tag:
         required: true
         type: string
-    secrets: inherit
+    # secrets: 
+    #   inherit
 
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}
