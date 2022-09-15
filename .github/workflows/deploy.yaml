@@ -13,9 +13,6 @@ on:
       image-tag:
         required: true
         type: string
-      # api-spec:
-      #   required: true
-      #   type: string
 
 jobs:
   deploy:
@@ -26,7 +23,6 @@ jobs:
       contents: read
 
     steps:
-      # generate environment short name to match app 'namespace' used in Azure
       - name: Set env
         id: env
         uses: actions/github-script@v6
@@ -50,7 +46,7 @@ jobs:
       #     spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'`
       #     echo "::set-output name=result::$spec"
 
-      # make it easier to manage parameters
+      # simplify manage bicep parameter management
       - name: Set params
         id: params
         uses: actions/github-script@v6
