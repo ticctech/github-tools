@@ -26,8 +26,9 @@ jobs:
       contents: read
 
     steps:
+      - uses: actions/checkout@v3
       - run: |
-          cd /home/runner/work/workflow/workflow
+          cd ${GITHUB_WORKSPACE}
           ls
 
       # # generate environment short name to match app 'namespace' used in Azure
