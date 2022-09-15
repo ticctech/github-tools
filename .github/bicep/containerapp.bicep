@@ -12,17 +12,7 @@ param managedEnvName string
 param appName string
 
 @description('Container App image name')
-param imageName string = 'ghcr.io/ticctech/${appName}:latest'
-
-@description('Container App HTTP port')
-param httpPort int = 8080
-
-@description('Container App gRPC port')
-param grpcPort int = 8080
-
-@secure()
-@description('Mongo DB URI')
-param mongoUri string
+param imageName string
 
 @secure()
 @description('GitHub container registry user')
@@ -31,6 +21,10 @@ param ghcrUser string
 @secure()
 @description('GitHub container registry personal access token')
 param ghcrPat string
+
+@secure()
+@description('Mongo DB URI')
+param mongoUri string
 
 // get a reference to the container apps environment
 resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
@@ -46,13 +40,13 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
       activeRevisionsMode: 'single'
       dapr: {
         appId: appName
-        appPort: grpcPort
+        appPort: 8080
         appProtocol: 'grpc'
         enabled: true
       }
       ingress: {
         external: true
-        targetPort: httpPort
+        targetPort: 8080
         allowInsecure: false
         traffic: [
           {

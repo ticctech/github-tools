@@ -14,9 +14,6 @@ on:
         required: true
         type: string
 
-env:
-  IMAGE_REPO: ghcr.io/${{ github.repository }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -48,14 +45,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let str = 'appName=${{ github.event.repository.name }}'
-            str += ' managedEnvName=cae-ticc-${{ steps.env.outputs.result }}'
-            str += ' apiManagerName=apim-ticc-${{ steps.env.outputs.result }}'
-            str += ' imageName=${{ inputs.image-tag }}'
-            str += ' mongoUri=${{ secrets.MONGO_URI }}'
-            str += ' ghcrUser=${{ secrets.GHCR_USER }}'
-            str += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            return str
+            let p = 'appName=${{ github.event.repository.name }}'
+            p += ' managedEnvName=cae-ticc-${{ steps.env.outputs.result }}'
+            p += ' apiManagerName=apim-ticc-${{ steps.env.outputs.result }}'
+            p += ' imageName=${{ inputs.image-tag }}'
+            p += ' mongoUri=${{ secrets.MONGO_URI }}'
+            p += ' ghcrUser=${{ secrets.GHCR_USER }}'
+            p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+            return p
           result-encoding: string
 
       - uses: actions/checkout@v3
@@ -75,6 +72,5 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
           template: .github/bicep/main.bicep
-          # parameters: .github/bicep/params.json appName=${{ github.event.repository.name }} managedEnvName=cae-ticc-${{ steps.env.outputs.val }} apiManagerName=apim-ticc-${{ steps.env.outputs.val }} imageName=${{ inputs.image-tag }} mongoUri=${{ secrets.MONGO_URI }} ghcrUser=${{ secrets.GHCR_USER }} ghcrPat=${{ secrets.GHCR_PAT }}
           parameters: .github/bicep/params.json ${{ steps.params.outputs.result }}
           failOnStdErr: false
