@@ -31,62 +31,69 @@ jobs:
       #     cd ${GITHUB_WORKSPACE}
       #     ls
 
-      # generate environment short name to match app 'namespace' used in Azure
-      - name: Set env
-        id: env
-        uses: actions/github-script@v6
+      - uses: actions/github-script@v6
         with:
           script: |
-            switch('${{ inputs.environment }}') {
-              case 'staging':
-                return "stg"
-              case 'production':
-                return "prd"
-              default:
-                return "dev"
-            }
-          result-encoding: string
+            console.log('Print 1: ','${{ env.GITHUB_WORKSPACE }})
+            console.log('Print 2: ','${{ GITHUB_WORKSPACE }})
+            console.log('Print 3: ','${GITHUB_WORKSPACE})
 
-      - name: Load local variables
-        id: api-spec
-        uses: actions/github-script@v6
-        with:
-          script: |
-            return await import('${{ env.GITHUB_WORKSPACE }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json')
-          result-encoding: string
+      # # generate environment short name to match app 'namespace' used in Azure
+      # - name: Set env
+      #   id: env
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       switch('${{ inputs.environment }}') {
+      #         case 'staging':
+      #           return "stg"
+      #         case 'production':
+      #           return "prd"
+      #         default:
+      #           return "dev"
+      #       }
+      #     result-encoding: string
 
-      # make it easier to manage parameters
-      - name: Set params
-        id: params
-        uses: actions/github-script@v6
-        with:
-          script: |
-            let p = 'env=${{ steps.env.outputs.result }}'
-            p += ' appName=${{ github.event.repository.name }}'
-            p += ' imageName=${{ inputs.image-tag }}'
-            p += ' ghcrUser=${{ secrets.GHCR_USER }}'
-            p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' mongoUri=${{ secrets.MONGO_URI }}'
-            p += ' apiSpec=${{ steps.tag.outputs.image-tag }}'
-            return p
-          result-encoding: string
+      # - name: Load local variables
+      #   id: api-spec
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       return await import('${{ env.GITHUB_WORKSPACE }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json')
+      #     result-encoding: string
 
-      - uses: actions/checkout@v3
+      # # make it easier to manage parameters
+      # - name: Set params
+      #   id: params
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       let p = 'env=${{ steps.env.outputs.result }}'
+      #       p += ' appName=${{ github.event.repository.name }}'
+      #       p += ' imageName=${{ inputs.image-tag }}'
+      #       p += ' ghcrUser=${{ secrets.GHCR_USER }}'
+      #       p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+      #       p += ' mongoUri=${{ secrets.MONGO_URI }}'
+      #       p += ' apiSpec=${{ steps.tag.outputs.image-tag }}'
+      #       return p
+      #     result-encoding: string
 
-      - name: Azure login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - uses: actions/checkout@v3
 
-      - name: Deploy Container App
-        uses: azure/arm-deploy@v1
-        with:
-          deploymentName: ${{ github.event.repository.name }}
-          scope: resourcegroup
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
-          template: .github/bicep/main.bicep
-          parameters: ${{ steps.params.outputs.result }}
-          failOnStdErr: false
+      # - name: Azure login
+      #   uses: azure/login@v1
+      #   with:
+      #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # - name: Deploy Container App
+      #   uses: azure/arm-deploy@v1
+      #   with:
+      #     deploymentName: ${{ github.event.repository.name }}
+      #     scope: resourcegroup
+      #     subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      #     resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
+      #     template: .github/bicep/main.bicep
+      #     parameters: ${{ steps.params.outputs.result }}
+      #     failOnStdErr: false
