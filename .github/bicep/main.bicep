@@ -5,18 +5,17 @@
 @description('Location of the Container Apps environment')
 param location string = resourceGroup().location
 
-@description('Name of Container Apps Managed Environment')
-param managedEnvName string
+@description('Environment short name')
+param env string
+
+// @description('Name of Container Apps Managed Environment')
+// param managedEnvName string
 
 @description('Container App HTTP port')
 param appName string
 
 @description('Container App image name')
 param imageName string
-
-@secure()
-@description('Mongo DB URI')
-param mongoUri string
 
 @secure()
 @description('GitHub container registry user')
@@ -26,8 +25,12 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
-@description('Name of the API manager to add API reference to')
-param apiManagerName string
+@secure()
+@description('Mongo DB URI')
+param mongoUri string
+
+// @description('Name of the API manager to add API reference to')
+// param apiManagerName string
 
 @description('Open API spec')
 param apiSpec string
@@ -37,7 +40,7 @@ module app 'containerapp.bicep' = {
   name: '${appName}-app'
   params: {
     location: location
-    managedEnvName: managedEnvName
+    managedEnvName: 'cae-ticc-${env}'
     appName: appName
     imageName: imageName
     ghcrUser: ghcrUser
@@ -50,7 +53,7 @@ module app 'containerapp.bicep' = {
 module api 'api.bicep' = {
   name: '${appName}-api'
   params: {
-    apiManagerName: apiManagerName
+    apiManagerName: 'apim-ticc-${env}'
     appName: appName
     // apiName: '${appName}s'
     // displayName: appName
