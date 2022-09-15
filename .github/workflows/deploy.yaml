@@ -62,7 +62,7 @@ jobs:
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
             p += ' mongoUri=${{ secrets.MONGO_URI }}'
-            p += ' apiSpec=${{ steps.tag.outputs.image-tag }}'
+            p += ' apiSpec=${{ steps.api-spec.outputs.result }}'
             return p
           result-encoding: string
 
