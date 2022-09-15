@@ -35,7 +35,7 @@ jobs:
         with:
           script: |
             console.log('Print 1: ','${{ env.GITHUB_WORKSPACE }}')
-            console.log('Print 2: ','${{ GITHUB_WORKSPACE }}')
+            console.log('Print 2: ','${{ env:GITHUB_WORKSPACE }}')
             console.log('Print 3: ','${GITHUB_WORKSPACE}')
 
       # # generate environment short name to match app 'namespace' used in Azure
