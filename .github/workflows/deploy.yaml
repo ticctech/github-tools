@@ -27,8 +27,9 @@ jobs:
 
     steps:
       # generate environment short name to match app 'namespace' used in Azure
-      - uses: actions/github-script@v6
+      - name: Set env
         id: env
+        uses: actions/github-script@v6
         with:
           script: |
             switch('${{ inputs.environment }}') {
@@ -42,18 +43,19 @@ jobs:
           result-encoding: string
 
       # make it easier to manage parameters
-      - uses: actions/github-script@v6
+      - name: Set params
         id: params
+        uses: actions/github-script@v6
         with:
           script: |
-            return "
-              appName=${{ github.event.repository.name }}
-              managedEnvName=cae-ticc-${{ steps.env.outputs.result }}
-              apiManagerName=apim-ticc-${{ steps.env.outputs.result }}
-              imageName=${{ inputs.image-tag }}
-              mongoUri=${{ secrets.MONGO_URI }}
-              ghcrUser=${{ secrets.GHCR_USER }}
-              ghcrPat=${{ secrets.GHCR_PAT }}"
+            let str = 'appName=${{ github.event.repository.name }}'
+            str += ' managedEnvName=cae-ticc-${{ steps.env.outputs.result }}'
+            str += ' apiManagerName=apim-ticc-${{ steps.env.outputs.result }}'
+            str += ' imageName=${{ inputs.image-tag }}'
+            str += ' mongoUri=${{ secrets.MONGO_URI }}'
+            str += ' ghcrUser=${{ secrets.GHCR_USER }}'
+            str += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+            return str
           result-encoding: string
 
       - uses: actions/checkout@v3
