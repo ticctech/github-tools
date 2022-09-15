@@ -42,6 +42,8 @@ jobs:
             }
           result-encoding: string
 
+      - uses: actions/checkout@v3
+        
       - name: Load local variables
         id: api-spec
         uses: actions/github-script@v6
@@ -65,8 +67,6 @@ jobs:
             p += ' apiSpec=${{ steps.tag.outputs.image-tag }}'
             return p
           result-encoding: string
-
-      - uses: actions/checkout@v3
 
       - name: Azure login
         uses: azure/login@v1
