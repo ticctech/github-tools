@@ -40,9 +40,15 @@ jobs:
           go-version: ">=1.18.0"
 
       - name: Run unit tests
+        env:
+          BUF_USER: ${{ secrets.BUF_USER }}
+          BUF_PAT: ${{ secrets.BUF_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          # GH_ORG: ${{ github.repository_owner }}
         run: |
-          echo "machine github.com login ${{ secrets.GH_USER }} password ${{ secrets.GH_PAT }} >> ~/.netrc
-          echo "machine go.buf.build login ${{ secrets.BUF_USER }} password ${{ secrets.BUF_PAT }} >> ~/.netrc
+          echo "machine github.com login $GH_USER password $GH_PAT" >> ~/.netrc
+          echo "machine go.buf.build login $BUF_USER password $BUF_PAT" >> ~/.netrc
           go env -w GOPRIVATE="github.com/${{ github.repository_owner }}/*"
           go mod download
           go test -v ./handler/...
