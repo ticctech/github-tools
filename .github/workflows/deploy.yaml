@@ -47,7 +47,7 @@ jobs:
       - name: Load openapi spec
         id: api-spec
         run: |
-          spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'``
+          spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'`
           echo "::set-output name=result::$spec"
 
       # make it easier to manage parameters
