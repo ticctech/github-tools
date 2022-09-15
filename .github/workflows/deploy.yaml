@@ -44,11 +44,11 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Load openapi spec
-        id: api-spec
-        run: |
-          spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'`
-          echo "::set-output name=result::$spec"
+      # - name: Load openapi spec
+      #   id: api-spec
+      #   run: |
+      #     spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'`
+      #     echo "::set-output name=result::$spec"
 
       # make it easier to manage parameters
       - name: Set params
@@ -62,7 +62,7 @@ jobs:
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
             p += ' mongoUri=${{ secrets.MONGO_URI }}'
-            p += ' apiSpec=${{ steps.api-spec.outputs.result }}'
+            // p += ' apiSpec=${{ steps.api-spec.outputs.result }}'
             return p
           result-encoding: string
 
