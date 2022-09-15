@@ -13,8 +13,6 @@ on:
       image-tag:
         required: true
         type: string
-    # secrets: 
-    #   inherit
 
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}
@@ -33,10 +31,10 @@ jobs:
         id: env
         with:
           script: |
-            switch(${{ inputs.environment }}) {
-              case "staging":
+            switch('${{ inputs.environment }}') {
+              case 'staging':
                 return "stg"
-              case "production":
+              case 'production':
                 return "prd"
               default:
                 return "dev"
