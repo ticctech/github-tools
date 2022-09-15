@@ -55,10 +55,7 @@ module api 'api.bicep' = {
   params: {
     apiManagerName: 'apim-ticc-${env}'
     appName: appName
-    // apiName: '${appName}s'
-    // displayName: appName
     apiSpec: apiSpec
-    // apiPolicies: apiPolicies
     backendName: appName
     appFdqn: app.outputs.fdqn
     appId: app.outputs.appId

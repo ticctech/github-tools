@@ -13,9 +13,9 @@ on:
       image-tag:
         required: true
         type: string
-      api-spec:
-        required: true
-        type: string
+      # api-spec:
+      #   required: true
+      #   type: string
 
 jobs:
   deploy:
@@ -42,6 +42,14 @@ jobs:
             }
           result-encoding: string
 
+      - name: Load local variables
+        id: api-spec
+        uses: actions/github-script@v6
+        with:
+          script: |
+            return await import('../../gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json')
+          result-encoding: string
+
       # make it easier to manage parameters
       - name: Set params
         id: params
@@ -49,12 +57,12 @@ jobs:
         with:
           script: |
             let p = 'env=${{ steps.env.outputs.result }}'
-            p += 'appName=${{ github.event.repository.name }}'
+            p += ' appName=${{ github.event.repository.name }}'
             p += ' imageName=${{ inputs.image-tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
             p += ' mongoUri=${{ secrets.MONGO_URI }}'
-            p += ' apiSpec=${{ inputs.api-spec }}'
+            p += ' apiSpec=${{ steps.tag.outputs.image-tag }}'
             return p
           result-encoding: string
 
