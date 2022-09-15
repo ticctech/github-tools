@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - run: |
-          cd /home/runner/work/workflow
+          cd /home/runner/work/workflow/workflow
           ls
 
       # # generate environment short name to match app 'namespace' used in Azure
