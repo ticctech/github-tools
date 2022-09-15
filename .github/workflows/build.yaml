@@ -1,13 +1,14 @@
 # Builds a docker image, publishes it to GitHub's docker repo (ghcr.io).
-#
 # The workflow will only run if commit message contains [tag:patch|minor|major]
+
+# See: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
 
 name: Build Go container
 
 on:
   workflow_call:
     # inputs:
-    # secrets:
+    secrets: inherit
     outputs:
       image-tag:
         description: Tag for the docker image
