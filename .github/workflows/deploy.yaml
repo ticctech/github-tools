@@ -40,12 +40,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      # - name: Load openapi spec
-      #   id: api-spec
-      #   run: |
-      #     spec=`cat '${{ github.workspace }}/gen/proto/openapi/${{ github.event.repository.name }}/v1/${{ github.event.repository.name }}.swagger.json'`
-      #     echo "::set-output name=result::$spec"
-
       # simplify manage bicep parameter management
       - name: Set params
         id: params
@@ -57,8 +51,6 @@ jobs:
             p += ' imageName=${{ inputs.image-tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' mongoUri=${{ secrets.MONGO_URI }}'
-            p += ' docStoreKey=${{ secrets.DOC_STORE_KEY }}'
             return p
           result-encoding: string
 
