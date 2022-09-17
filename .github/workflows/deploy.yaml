@@ -58,6 +58,7 @@ jobs:
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
             p += ' mongoUri=${{ secrets.MONGO_URI }}'
+            p += ' docStoreKey=${{ secrets.DOC_STORE_KEY }}'
             return p
           result-encoding: string
 
