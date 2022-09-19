@@ -12,7 +12,7 @@ on:
         type: string
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
@@ -25,7 +25,6 @@ jobs:
       || contains(github.event.head_commit.message, '[tag:minor]')
       || contains(github.event.head_commit.message, '[tag:major]')
 
-    name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v2
         with:
