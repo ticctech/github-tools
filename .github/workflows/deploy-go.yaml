@@ -15,7 +15,7 @@ on:
         type: string
 
 jobs:
-  deploy:
+  go:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
