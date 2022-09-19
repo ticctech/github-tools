@@ -10,10 +10,10 @@ on:
     outputs:
       image-tag:
         description: Tag for the docker image
-        value: ${{ jobs.go.outputs.image-tag }}
+        value: ${{ jobs.image.outputs.image-tag }}
 
 jobs:
-  go:
+  image:
     runs-on: ubuntu-latest
     permissions:
       contents: write
