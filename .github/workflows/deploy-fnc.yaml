@@ -29,6 +29,7 @@ jobs:
         with:
           name: package
           path: ${{ github.workspace }}/output
+          
 
       - name: "Run Azure Functions Action"
         uses: azure/functions-action@v1

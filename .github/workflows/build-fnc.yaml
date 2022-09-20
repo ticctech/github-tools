@@ -36,7 +36,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0'
+          dotnet-version: "6.0"
 
       - name: Resolve dependencies
         shell: bash
@@ -49,6 +49,7 @@ jobs:
         with:
           name: package
           path: ${{ github.workspace }}/output
+          retention-days: 1
 
       - name: Increment version
         id: version
