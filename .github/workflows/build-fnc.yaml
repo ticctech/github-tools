@@ -1,0 +1,80 @@
+# Builds a docker image, publishes it to GitHub's docker repo (ghcr.io).
+# The workflow will only run if commit message contains [tag:patch|minor|major]
+
+# See: https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/reusing-workflows
+
+name: Build Go container
+
+on:
+  workflow_call:
+    # outputs:
+    #   artifact:
+    #     description: Name of the build artifact
+    #     value: ${{ jobs.package.outputs.artifact }}
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    # outputs:
+    #   artifact: ${{ steps.tag.outputs.artifact }}
+
+    # only run if commit message contains versioning setting
+    if: |
+      contains(github.event.head_commit.message, '[tag:patch]')
+      || contains(github.event.head_commit.message, '[tag:minor]')
+      || contains(github.event.head_commit.message, '[tag:major]')
+
+    steps:
+      - name: Workflowout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+
+      - name: Resolve dependencies
+        shell: bash
+        run: |
+          pushd './.'
+          dotnet build --configuration Release --output ./output
+          popd
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: ${{ github.workspace }}/output
+
+      - name: Increment version
+        id: version
+        uses: paulhatch/semantic-version@v4.0.2
+        with:
+          major_pattern: "[tag:major]"
+          minor_pattern: "[tag:minor]"
+          short_tags: false
+
+      - name: Tag repo
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
+              sha: context.sha
+            })
+
+      - name: Create release
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "${{ steps.version.outputs.version_tag }}"
+            })
