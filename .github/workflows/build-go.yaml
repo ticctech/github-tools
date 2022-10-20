@@ -54,7 +54,7 @@ jobs:
 
       - name: Increment version
         id: version
-        uses: paulhatch/semantic-version@v4.0.2
+        uses: paulhatch/semantic-version@v5.0.0-alpha2
         with:
           major_pattern: "[tag:major]"
           minor_pattern: "[tag:minor]"
@@ -81,7 +81,7 @@ jobs:
       - name: Generate image tag
         id: tag
         run: |
-          echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_OUTPUT
+          echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_ENV
 
       - name: Build and push image
         uses: docker/build-push-action@v3
