@@ -58,7 +58,6 @@ jobs:
         with:
           major_pattern: "[tag:major]"
           minor_pattern: "[tag:minor]"
-          short_tags: false
 
       - name: Tag repo
         uses: actions/github-script@v6
