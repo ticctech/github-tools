@@ -17,6 +17,9 @@ param appName string
 @description('Container App image name')
 param imageName string
 
+@description('Container App target port')
+param targetPort int = 8080
+
 @secure()
 @description('GitHub container registry user')
 param ghcrUser string
@@ -56,7 +59,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
       }
       ingress: {
         external: true
-        targetPort: 8080
+        targetPort: targetPort
         allowInsecure: false
         traffic: [
           {
