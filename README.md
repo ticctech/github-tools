@@ -64,3 +64,7 @@ To create an alias, add the following configuration to `bicepconfig.json` locate
   }
 }
 ```
+
+### Further reading
+
+<https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep>
