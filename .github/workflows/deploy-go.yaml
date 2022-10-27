@@ -40,6 +40,25 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - id: set_var
+        run: |
+          content=`cat ../../gen/proto/openapi/docs.swagger.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=packageJson::$content"
+
+      - run: |
+          echo "${{fromJson(steps.set_var.outputs.packageJson).version}}"
+
+      - name: Load API spec
+        id: tag
+        run: |
+          content=`cat ../../gen/proto/openapi/docs.swagger.json`
+          echo "api_spec=$content" >> $GITHUB_ENV
+
       # simplify manage bicep parameter management
       - name: Set params
         id: params
@@ -48,9 +67,10 @@ jobs:
           script: |
             let p = 'env=${{ steps.env.outputs.result }}'
             p += ' appName=${{ github.event.repository.name }}'
-            p += ' imageName=${{ inputs.image-tag }}'
+            p += ' imageTag=${{ inputs.image-tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+            p += ' apiSpec=${{ env.api_spec }}'
             return p
           result-encoding: string
 
@@ -68,6 +88,6 @@ jobs:
           scope: resourcegroup
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
-          template: .github/bicep/main.bicep
-          parameters: ${{ steps.params.outputs.result }}
+          template: 'ts:${{ secrets.AZURE_SUBSCRIPTION_ID }}/app-ticc-${{ steps.env.outputs.result }}-ae-rg/ts-containerapp-stg:1.0'
+          parameters: .github/workflows/params.json ${{ steps.params.outputs.result }}
           failOnStdErr: false

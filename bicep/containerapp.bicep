@@ -1,21 +1,23 @@
 // ----------------------------------------------------------------------------
-// Deploys a Container App
+// Deploys a Container App and optionally exposes it via an API gateway
 // ----------------------------------------------------------------------------
 
 @description('Location of the Container Apps environment')
 param location string = resourceGroup().location
 
-@description('Name of Container Apps Managed Environment')
-param managedEnvName string
-
-@description('Name of Container Apps Managed Identity')
-param managedIdName string
+@allowed([
+  'dev'
+  'stg'
+  'prd'
+])
+@description('Environment short name')
+param env string
 
 @description('Container App HTTP port')
 param appName string
 
 @description('Container App image name')
-param imageName string
+param imageTag string
 
 @description('Container App target port')
 param targetPort int = 8080
@@ -28,16 +30,22 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
+@description('The API specification in openapi format')
+param apiSpec string
+
 // get a reference to the container apps environment
 resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
-  name: managedEnvName
+  name: 'cae-ticc-${env}'
 }
 
 // get a reference to the container apps environment
 resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
-  name: managedIdName
+  name: 'id-ticc-${env}'
 }
 
+// -----------------------------
+// Deploy Container App
+// -----------------------------
 resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: 'ca-${appName}'
   location: location
@@ -86,7 +94,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
       containers: [
         {
           name: appName
-          image: imageName
+          image: imageTag
           resources: {
             cpu: any('0.5')
             memory: '1Gi'
@@ -131,6 +139,77 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   }
 }
 
-// used to set app as 'backend' in API manager
-output appId string = containerApp.id
-output fdqn string = containerApp.properties.configuration.ingress.fqdn
+// -----------------------------
+// Deploy Container App API
+// -----------------------------
+var apiName = '${appName}s'
+var deployApi = length(apiSpec) > 0
+
+// get reference to API manager
+resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = if (deployApi) {
+  name: 'apim-ticc-${env}'
+}
+
+// update API from swagger
+resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (deployApi) {
+  name: apiName
+  parent: apiManager
+  properties: {
+    displayName: apiName
+    apiRevision: '1'
+    // apiVersion: 'string'
+    isCurrent: true
+    path: '/${apiName}'
+    type: 'http'
+    protocols: [
+      'https'
+    ]
+    subscriptionRequired: false
+    format: 'swagger-json'
+    // value: loadTextContent('../../gen/proto/openapi/docs.swagger.json')
+    value: apiSpec
+  }
+}
+
+var apiPolicies = format('''
+  <policies>
+    <inbound>
+      <base />
+      <set-backend-service backend-id="{0}" />
+    </inbound>
+    <backend>
+      <base />
+    </backend>
+    <outbound>
+      <base />
+    </outbound>
+    <on-error>
+      <base />
+    </on-error>
+  </policies>
+''', appName)
+
+// set policies
+resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = if (deployApi) {
+  name: 'policy'
+  parent: api
+  properties: {
+    format: 'xml'
+    value: apiPolicies
+  }
+}
+
+// create backend for service
+resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = if (deployApi) {
+  name: appName
+  parent: apiManager
+  properties: {
+    url: 'https://${containerApp.properties.configuration.ingress.fqdn}'
+    protocol: 'http'
+    resourceId: '${environment().resourceManager}/${containerApp.id}'
+    tls: {
+      validateCertificateChain: true
+      validateCertificateName: true
+    }
+  }
+}
