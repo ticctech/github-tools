@@ -30,6 +30,9 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
+@description('Specifies whether the container app exposes an external API or not')
+param apiEnabled bool
+
 @description('The API specification in openapi format')
 param apiSpec string
 
@@ -143,15 +146,14 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
 // Deploy Container App API
 // -----------------------------
 var apiName = '${appName}s'
-var deployApi = length(apiSpec) > 0
 
 // get reference to API manager
-resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = if (deployApi) {
+resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = if (apiEnabled) {
   name: 'apim-ticc-${env}'
 }
 
 // update API from swagger
-resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (deployApi) {
+resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiEnabled) {
   name: apiName
   parent: apiManager
   properties: {
@@ -190,7 +192,7 @@ var apiPolicies = format('''
 ''', appName)
 
 // set policies
-resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = if (deployApi) {
+resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = if (apiEnabled) {
   name: 'policy'
   parent: api
   properties: {
@@ -200,7 +202,7 @@ resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = i
 }
 
 // create backend for service
-resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = if (deployApi) {
+resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = if (apiEnabled) {
   name: appName
   parent: apiManager
   properties: {
