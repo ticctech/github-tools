@@ -40,10 +40,10 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - name: Fail if breaking changes
-        uses: bufbuild/buf-breaking-action@v1
-        with:
-          against: '${{ github.server_url }}/${{ github.repository }}.git#branch=main,ref=HEAD~1'
+      # - name: Fail if breaking changes
+      #   uses: bufbuild/buf-breaking-action@v1
+      #   with:
+      #     against: '${{ github.server_url }}/${{ github.repository }}.git#branch=main,ref=HEAD~1'
 
       - name: Push to Buf Schema Registry
         uses: bufbuild/buf-push-action@v1
