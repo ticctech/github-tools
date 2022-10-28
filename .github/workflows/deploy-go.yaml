@@ -45,8 +45,8 @@ jobs:
         run: |
           spec=`cat ./gen/proto/openapi/docs.swagger.json`
           spec="${spec//'%'/'%25'}"
-          # spec="${spec//$'\n'/'%0A'}"
-          # spec="${spec//$'\r'/'%0D'}"
+          spec="${spec//$'\n'/'%0A'}"
+          spec="${spec//$'\r'/'%0D'}"
           echo "api_spec=$spec" >> $GITHUB_ENV
 
 
@@ -63,7 +63,7 @@ jobs:
             p += ' imageTag=${{ inputs.image-tag }}';
             p += ' ghcrUser=${{ secrets.GHCR_USER }}';
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}';
-            p += ' apiSpec=' + data;
+            p += ' apiSpec=${{ fromJson(env.api_spec }};
             return p
           result-encoding: string
 
