@@ -81,5 +81,5 @@ jobs:
           az deployment group create \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            --template-spec "/subscriptions/4e6ec3dd-7f2a-4679-86fc-1cc8297b48cd/resourceGroups/app-ticc-stg-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp" \
+            --template-spec "/subscriptions/4e6ec3dd-7f2a-4679-86fc-1cc8297b48cd/resourceGroups/app-ticc-stg-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \
             --parameters ./.github/workflows/params.json ${{ steps.params.outputs.result }}
