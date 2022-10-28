@@ -46,6 +46,7 @@ jobs:
       # push changes to the Buf Schema Registry
       - uses: bufbuild/buf-push-action@v1
         with:
+          input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
       - name: Install Go
