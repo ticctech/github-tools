@@ -34,7 +34,7 @@ param ghcrPat string
 param apiEnabled bool
 
 @description('The API specification in openapi format')
-param apiSpec string = 'unset'
+param apiSpec string = ''
 
 // get a reference to the container apps environment
 resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
@@ -168,7 +168,6 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiEnabled)
     ]
     subscriptionRequired: false
     format: 'swagger-json'
-    // value: loadTextContent('../../gen/proto/openapi/docs.swagger.json')
     value: apiSpec
   }
 }
