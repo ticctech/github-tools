@@ -49,8 +49,8 @@ jobs:
           script: |
             let apiSpec;
             if(${{ inputs.api-spec }}) {
-              apiSpec = require(${{ inputs.api-spec}})
-              apiSpec = btoa(JSON.stringify(apiSpec))
+              apiSpec = require('${{ inputs.api-spec}}');
+              apiSpec = btoa(JSON.stringify(apiSpec));
             }
 
             let p = 'env=${{ steps.env.outputs.result }}';
