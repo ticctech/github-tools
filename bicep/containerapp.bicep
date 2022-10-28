@@ -34,7 +34,7 @@ param ghcrPat string
 param apiEnabled bool
 
 @description('The API specification in openapi format')
-param apiSpec string = ''
+param apiSpec string = 'unset'
 
 // get a reference to the container apps environment
 resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
