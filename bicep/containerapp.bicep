@@ -30,9 +30,6 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
-@description('Specifies whether the container app exposes an external API or not')
-param apiEnabled bool
-
 @description('The API specification in openapi format')
 param apiSpec string = ''
 
@@ -146,6 +143,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
 // Deploy Container App API
 // -----------------------------
 var apiName = '${appName}s'
+var apiEnabled = length(apiSpec) > 0
 
 // get reference to API manager
 resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = if (apiEnabled) {
