@@ -168,7 +168,7 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiEnabled)
     ]
     subscriptionRequired: false
     format: 'swagger-json'
-    value: apiSpec
+    value: base64ToJson(apiSpec)
   }
 }
 
