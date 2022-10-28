@@ -81,5 +81,5 @@ jobs:
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \
-            --parameters apiEnabled=true ${{ steps.params.outputs.result }}
-            # --parameters @.github/workflows/params.json ${{ steps.params.outputs.result }}
+            --parameters @.github/workflows/params.json ${{ steps.params.outputs.result }}
+            
