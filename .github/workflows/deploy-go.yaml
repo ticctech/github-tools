@@ -44,6 +44,9 @@ jobs:
         id: tag
         run: |
           content=`cat ./gen/proto/openapi/docs.swagger.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
           echo "api_spec=$content" >> $GITHUB_ENV
 
       # simplify manage bicep parameter management
