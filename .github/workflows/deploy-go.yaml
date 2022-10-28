@@ -56,7 +56,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            import data from './gen/proto/openapi/docs.swagger.json';
+            const data = await fetch('./gen/proto/openapi/docs.swagger.json');
+            
             let p = 'env=${{ steps.env.outputs.result }}';
             p += ' appName=${{ github.event.repository.name }}';
             p += ' imageTag=${{ inputs.image-tag }}';
