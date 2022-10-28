@@ -44,8 +44,8 @@ jobs:
       #   run: |
       #     spec=`cat ./gen/proto/openapi/docs.swagger.json`
       #     spec="${spec//'%'/'%25'}"
-      #     spec="${spec//$'\n'/'%0A'}"
-      #     spec="${spec//$'\r'/'%0D'}"
+      #     spec="${spec//$'\n'/' '}"
+      #     spec="${spec//$'\r'/' '}"
       #     echo "api_spec=$spec" >> $GITHUB_ENV
 
       # - run: |
@@ -82,6 +82,7 @@ jobs:
           scope: resourcegroup
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
-          template: 'ts:${{ secrets.AZURE_SUBSCRIPTION_ID }}/app-ticc-${{ steps.env.outputs.result }}-ae-rg/ts-containerapp-stg:1.0'
+          # template: 'ts:${{ secrets.AZURE_SUBSCRIPTION_ID }}/app-ticc-${{ steps.env.outputs.result }}-ae-rg/ts-containerapp-stg:1.0'
+          template: 'ts:4e6ec3dd-7f2a-4679-86fc-1cc8297b48cd/app-ticc-stg-ae-rg/ts-containerapp:1.0'
           parameters: ./.github/workflows/params.json ${{ steps.params.outputs.result }}
           failOnStdErr: false
