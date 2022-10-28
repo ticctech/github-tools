@@ -60,7 +60,7 @@ jobs:
             p += ' imageTag=${{ inputs.image-tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' apiSpec="${{ env.api_spec }}"'
+            p += ' apiSpec=JSON.stringify(${{ env.api_spec }})'
             return p
           result-encoding: string
 
