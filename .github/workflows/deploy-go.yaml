@@ -43,11 +43,11 @@ jobs:
       - name: Load API spec
         id: tag
         run: |
-          content=`cat ./gen/proto/openapi/docs.swagger.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "api_spec=$content" >> $GITHUB_ENV
+          spec=`cat ./gen/proto/openapi/docs.swagger.json`
+          spec="${spec//'%'/'%25'}"
+          spec="${spec//$'\n'/'%0A'}"
+          spec="${spec//$'\r'/'%0D'}"
+          echo "api_spec=$spec" >> $GITHUB_ENV
 
       # simplify manage bicep parameter management
       - name: Set params
@@ -60,7 +60,7 @@ jobs:
             p += ' imageTag=${{ inputs.image-tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' apiSpec=${{ env.api_spec }}'
+            p += ' apiSpec="${{ env.api_spec }}"'
             return p
           result-encoding: string
 
