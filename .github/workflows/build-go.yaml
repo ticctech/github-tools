@@ -36,6 +36,7 @@ jobs:
       - uses: bufbuild/buf-lint-action@v1
         with:
           input: proto
+          buf_token: ${{ secrets.BUF_PAT }}
 
       # fail if breaking changes against previous commit
       - uses: bufbuild/buf-breaking-action@v1
