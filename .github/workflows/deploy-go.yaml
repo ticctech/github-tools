@@ -71,7 +71,8 @@ jobs:
           scope: resourcegroup
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
-          template: ./.github/workflows/main.bicep
+          # template: ./.github/workflows/main.bicep
           # template: https://raw.githubusercontent.com/ticctech/github-actions/main/bicep/containerapp.bicep
+          additionalArguments: "--template-spec ts:/4e6ec3dd-7f2a-4679-86fc-1cc8297b48cd/app-ticc-stg-ae-rg/ts-containerapp:1.0"
           parameters: ./.github/workflows/params.json ${{ steps.params.outputs.result }}
           failOnStdErr: false
