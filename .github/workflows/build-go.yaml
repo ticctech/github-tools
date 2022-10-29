@@ -44,6 +44,7 @@ jobs:
         id: latest-release
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
