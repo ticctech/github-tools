@@ -55,6 +55,12 @@ jobs:
       # - name: Get result
       #   run: echo "${{steps.latest-release.outputs.result}}"
 
+
+      # Build previous version and compare with this version
+      # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
+
+
+
       # - name: Fail if breaking changes
       #   uses: bufbuild/buf-breaking-action@v1
       #   with:
