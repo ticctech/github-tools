@@ -46,7 +46,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const r = await github.rest.getLatestRelease({
+            const r = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
