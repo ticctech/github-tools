@@ -59,6 +59,16 @@ jobs:
           # echo "${{steps.latest-release.outputs.result}}"
 
       - name: Compare images
+        id: buf-compare
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const resp = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            return resp.data.tag_name
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
