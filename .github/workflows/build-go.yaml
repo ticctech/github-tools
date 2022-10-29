@@ -56,6 +56,7 @@ jobs:
         run: |
           buf build --exclude-imports --exclude-source-info --exclude-imports --exclude-source-info -o curr.json
           buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o prev.json
+          echo "curr=$(cat curr.json)" >> $GITHUB_ENV
           echo "prev=$(cat prev.json)" >> $GITHUB_ENV
 
       # - run: |
@@ -67,10 +68,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            console.log(${{ env.prev }});
-              //let prev = require('prev.json');
-              //console.log(JSON.stringify(apiSpec));
-
+            console.log(${{ env.curr }} === ${{ env.prev }});
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
