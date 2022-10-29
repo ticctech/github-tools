@@ -50,8 +50,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            const result = resp.data.tag_name
-            console.log(result)
+            return resp.data.tag_name
 
       - name: Get result
         run: echo "${{steps.latest-release.outputs.result}}"
