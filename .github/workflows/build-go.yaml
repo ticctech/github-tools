@@ -50,8 +50,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            console.log(resp)
-            const result = resp.tag_name
+            const result = resp.data.tag_name
             console.log(result)
 
       - name: Get result
