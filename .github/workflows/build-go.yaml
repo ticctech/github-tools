@@ -56,7 +56,7 @@ jobs:
         run: |
           buf build --exclude-imports --exclude-source-info --exclude-imports --exclude-source-info -o curr.json
           buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o prev.json
-          # echo "prev=$(cat prev.json)" >> $GITHUB_ENV
+          echo "prev=$(cat prev.json)" >> $GITHUB_ENV
 
       # - run: |
       #     echo "${{ env.prev }}"
