@@ -46,11 +46,10 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const r = await github.rest.repos.getLatestRelease({
+            return await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            console.log(r);
 
       - name: Get result
         run: echo "${{steps.latest-release.outputs.result}}"
