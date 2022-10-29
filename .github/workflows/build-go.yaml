@@ -56,11 +56,12 @@ jobs:
         run: |
           buf build --exclude-imports --exclude-source-info -o curr.json
           buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o prev.json
-          cat prev.json
-          # buf build 'https://github.com/${{ github.repository }}.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o prev.json
-          # echo "${{steps.latest-release.outputs.result}}"
+          echo "prev=$(cat prev.json)" >> $GITHUB_ENV
 
-      - name: Compare images
+      - run: |
+          echo "${{ env.prev }}"
+
+      - name: Compare last proto images
         id: buf-compare
         uses: actions/github-script@v6
         with:
