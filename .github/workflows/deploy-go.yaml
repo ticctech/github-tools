@@ -49,7 +49,7 @@ jobs:
           script: |
             let apiSpec = '';
             if('${{ inputs.api-spec }}'.length > 0) {
-              apiSpec = require('${{ inputs.api-spec}}');
+              apiSpec = require('${{ inputs.api-spec }}');
               apiSpec = btoa(JSON.stringify(apiSpec));
             }
 

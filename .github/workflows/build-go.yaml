@@ -66,11 +66,9 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const resp = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            return resp.data.tag_name
+              let prev = require('${{ prev.json }}');
+              console.log(JSON.stringify(apiSpec));
+
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
