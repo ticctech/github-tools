@@ -75,6 +75,7 @@ jobs:
         id: semver
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const deepEqual = require('deep-equal')
             const semver = require('semver')
@@ -99,28 +100,7 @@ jobs:
             }
 
       - run: |
-          echo ${{steps.semver.outputs.result}}
-
-      # - name: Latest tag
-      #   uses: actions/github-script@v6
-      #   id: latest-tag
-      #   with:
-      #     result-encoding: string # json
-      #     script: |
-      #       const resp = await github.rest.repos.listTags({
-      #          owner: context.repo.owner,
-      #          repo: context.repo.repo,
-      #          per_page: 1
-      #        })
-      #        return resp.data[0].name
-
-
-      # - name: Get next version
-      #   id: version
-      #   uses: paulhatch/semantic-version@v5.0.0-alpha2
-      #   with:
-      #     major_pattern: "[tag:major]"
-      #     minor_pattern: "[tag:minor]"
+          echo "${{ steps.semver.outputs.result }}"
 
       # - name: Install Go
       #   uses: actions/setup-go@v3
@@ -141,13 +121,6 @@ jobs:
       #     go mod download
       #     go test -v ./...
 
-      # - name: Get next version
-      #   id: version
-      #   uses: paulhatch/semantic-version@v5.0.0-alpha2
-      #   with:
-      #     major_pattern: "[tag:major]"
-      #     minor_pattern: "[tag:minor]"
-
       # - name: Tag repo
       #   uses: actions/github-script@v6
       #   with:
@@ -155,7 +128,7 @@ jobs:
       #       github.rest.git.createRef({
       #         owner: context.repo.owner,
       #         repo: context.repo.repo,
-      #         ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
+      #         ref: "refs/tags/${{ steps.semver.outputs.result }}",
       #         sha: context.sha
       #       })
 
@@ -169,7 +142,7 @@ jobs:
       # - name: Generate image tag
       #   id: tag
       #   run: |
-      #     echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_ENV
+      #     echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.semver.outputs.result }}" >> $GITHUB_ENV
 
       # - name: Build and push image
       #   uses: docker/build-push-action@v3
@@ -191,5 +164,5 @@ jobs:
       #       github.rest.repos.createRelease({
       #         owner: context.repo.owner,
       #         repo: context.repo.repo,
-      #         tag_name: "${{ steps.version.outputs.version_tag }}"
+      #         tag_name: "${{ steps.semver.outputs.result }}"
       #       })
