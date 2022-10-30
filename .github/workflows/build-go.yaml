@@ -68,9 +68,10 @@ jobs:
         with:
           result-encoding: string
           script: |
-            import isEqual from 'is-equal'
-            # const isEqual = require('is-equal')
-            const eq = isEqual('${{ env.curr }}', '${{ env.prev }}')
+            const isEqual = require('is-equal')
+            console.log("here")
+            var _ = require('lodash');
+            # const eq = isEqual('${{ env.curr }}', '${{ env.prev }}')
             # console.log(eq)
 
       # Build previous version and compare with this version
