@@ -21,7 +21,7 @@ jobs:
     outputs:
       image-tag: ${{ env.image_tag }}
 
-    # only run if commit message contains versioning setting
+    # run unless explicitly skipped (commit message contains [skip])
     if: |
       !contains(github.event.head_commit.message, '[skip]')
 
@@ -40,10 +40,10 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      # - name: Fail if breaking proto change
+      # - name: Fail when breaking proto change
       #   uses: bufbuild/buf-breaking-action@v1
       #   with:
-      #     against: 'https://github.com/${{ github.repository }}.git#branch=main,ref=HEAD~1'
+      #     against: '.git#branch=main,ref=HEAD~1'
 
       - name: Push to Buf Schema Registry
         uses: bufbuild/buf-push-action@v1
@@ -54,6 +54,27 @@ jobs:
       # ---------------------------------------------------
       # Version: patch, minor, or major
       # ---------------------------------------------------
+
+      - name: Current and previous protos as json
+        run: |
+          echo ${{ steps.latest.outputs.result }}
+          echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev=$(buf build '.git#branch=main,ref=HEAD~1' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+
+      - run: npm install deep-equal
+        
+      - name: Proto changed? (= API changed => minor)
+        id: proto-equal
+        uses: actions/github-script@v6
+        with:
+          script: |
+            var deepEqual = require('deep-equal');
+            const obj1 = JSON.parse('${{ env.curr }}')
+            const obj2 = JSON.parse('${{ env.prev }}')
+            return deepEqual(obj1, obj2)
+
+      - run: |
+          echo "${{steps.proto-equal.outputs.result}}"
 
       - name: Latest tag
         uses: actions/github-script@v6
@@ -79,27 +100,6 @@ jobs:
               repo: context.repo.repo,
             })
             return resp.data.tag_name
-
-      - name: Current and previous protos as json
-        run: |
-          echo ${{ steps.latest.outputs.result }}
-          echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#tag=${{ steps.latest-release.outputs.result }}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-
-      - run: npm install deep-equal
-        
-      - name: Proto changed? (= API changed => minor)
-        id: proto-equal
-        uses: actions/github-script@v6
-        with:
-          script: |
-            var deepEqual = require('deep-equal');
-            const obj1 = JSON.parse('${{ env.curr }}')
-            const obj2 = JSON.parse('${{ env.prev }}')
-            return deepEqual(obj1, obj2)
-
-      - run: |
-          echo "${{steps.proto-equal.outputs.result}}"
 
       # - name: Get next version
       #   id: version
