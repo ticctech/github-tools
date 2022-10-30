@@ -45,6 +45,7 @@ jobs:
       # - name: Fail when breaking proto change
       #   uses: bufbuild/buf-breaking-action@v1
       #   with:
+      #     against: .git#tag=${{ steps.latest-release.outputs.result }}
       #     against: '.git#branch=main,ref=HEAD~1'
 
       - name: Push to Buf Schema Registry
@@ -98,8 +99,9 @@ jobs:
               }
             }
 
-            await exec.exec('buf build --exclude-imports --exclude-source-info -o -#format=json', options);
-
+            const resp = await exec.getExecOutput('buf build --exclude-imports --exclude-source-info -o -#format=json', options);
+            consle.log(resp)
+            
             //const obj1 = JSON.parse('${{ env.curr }}')
             //const obj2 = JSON.parse('${{ env.prev }}')
             //return !deepEqual(obj1, obj2)
