@@ -60,11 +60,11 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const resp = await github.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            console.log(resp)
+            # const resp = await github.repos.listTags({
+            #   owner: context.repo.owner,
+            #   repo: context.repo.repo,
+            # })
+            # console.log(resp)
             const resp2 = await github.rest.repos.listTags({
               owner: context.repo.owner,
               repo: context.repo.repo,
