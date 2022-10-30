@@ -55,17 +55,17 @@ jobs:
       # Version: patch, minor, or major
       # ---------------------------------------------------
 
-      # - name: Latest tag
-      #   uses: actions/github-script@v6
-      #   with:
-      #     # result-encoding: string
-      #     script: |
-      #       const resp = await github.rest.repos.listTags({
-      #          owner: context.repo.owner,
-      #          repo: context.repo.repo,
-      #          per_page: 1,
-      #        })
-      #        console.log(resp.data.name)
+      - name: Latest tag
+        uses: actions/github-script@v6
+        with:
+          # result-encoding: string
+          script: |
+            const resp = await github.rest.repos.listTags({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               per_page: 1,
+             })
+             console.log(resp.data.name)
 
       - name: Latest release
         id: latest
