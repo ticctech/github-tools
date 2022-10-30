@@ -89,12 +89,12 @@ jobs:
             const options = {}
             options.listeners = {
               stdout: (data) => {
-                myOutput += data.toString()
-                console.log(myOutput);
+                //myOutput += data.toString()
+                console.log(data);
               },
               stderr: (data) => {
-                myError += data.toString()
-                console.error(myError);
+                //myError += data.toString()
+                console.error(data);
               }
             }
 
