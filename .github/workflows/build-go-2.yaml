@@ -91,12 +91,11 @@ jobs:
               }
             })
             
-            let tag = '${{ steps.latest-release.outputs.result }}'
             // major, premajor, minor, preminor, patch, prepatch, or prerelease
             if (deepEqual(curr, prev)) {
-              tag = semver.inc(tag, 'patch')
+              return semver.inc('${{ steps.latest-release.outputs.result }}', 'patch')
             } else {
-              tag = semver.inc(tag, 'minor')
+              return semver.inc('${{ steps.latest-release.outputs.result }}', 'minor')
             }
 
       - run: |
