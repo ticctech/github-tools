@@ -68,7 +68,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const { exec } = require('node:child_process');
+            // const { exec } = require('node:child_process');
             const deepEqual = require('deep-equal');
 
             exec("curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)", (error, stdout, stderr) => {
