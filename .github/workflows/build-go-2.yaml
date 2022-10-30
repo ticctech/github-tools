@@ -90,19 +90,20 @@ jobs:
             options.listeners = {
               stdout: (data) => {
                 //myOutput += data.toString()
-                console.log(data);
+                console.log('output', data);
               },
               stderr: (data) => {
                 //myError += data.toString()
-                console.error(data);
+                console.error('error', data);
               }
             }
 
             await exec.exec('echo $(buf build --exclude-imports --exclude-source-info -o -#format=json)', options);
 
-            const obj1 = JSON.parse('${{ env.curr }}')
-            const obj2 = JSON.parse('${{ env.prev }}')
-            return !deepEqual(obj1, obj2)
+            //const obj1 = JSON.parse('${{ env.curr }}')
+            //const obj2 = JSON.parse('${{ env.prev }}')
+            //return !deepEqual(obj1, obj2)
+            return false
 
       - run: |
           echo "${{steps.proto-changed.outputs.result}}"
