@@ -69,7 +69,8 @@ jobs:
           result-encoding: string
           script: |
             const _ = require('lodash')
-            console.log( _.isEqual(remoteJSON, localJSON) );
+            const eq = await _.isEqual(remoteJSON, localJSON)
+            console.log(eq);
             # console.log(${{ env.curr }} === ${{ env.prev }});
 
       # Build previous version and compare with this version
