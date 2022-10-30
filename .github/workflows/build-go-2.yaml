@@ -54,12 +54,23 @@ jobs:
       # ---------------------------------------------------
       # Version: patch, minor, or major
       # ---------------------------------------------------
+      - name: Latest release
+        id: latest-release
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string # json
+          script: |
+            const resp = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            return resp.data.tag_name
 
       - name: Current and previous protos as json
         run: |
           echo ${{ steps.latest.outputs.result }}
           echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#branch=main,ref=HEAD~1' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev=$(buf build '.git#tag=${{ steps.latest-release.outputs.result }}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
         
@@ -68,10 +79,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            // const { exec } = require('node:child_process');
+            const { exec } = require('node:child_process');
             const deepEqual = require('deep-equal');
 
-            exec("curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)", (error, stdout, stderr) => {
+            exec("buf build --exclude-imports --exclude-source-info -o -#format=json", (error, stdout, stderr) => {
               if (error) {
                 console.error(`exec error: ${error}`);
                 return;
@@ -100,17 +111,6 @@ jobs:
              })
              return resp.data[0].name
 
-      - name: Latest release
-        id: latest-release
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const resp = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            return resp.data.tag_name
 
       # - name: Get next version
       #   id: version
