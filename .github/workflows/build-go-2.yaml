@@ -84,8 +84,8 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
 
-            let curr = ''
-            let prev = ''
+            let curr = {}
+            let prev = {}
 
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners = {
@@ -93,18 +93,16 @@ jobs:
                   curr = data.toJSON()
                 }
               }
-            });
-            await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners = {
-                stdout: (data) => {
-                  prev = data.toJSON()
-                }
-              }
-            });
+            })
+            //await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //  listeners = {
+            //    stdout: (data) => { prev = data.toJSON() }
+            //  }
+            //})
 
             //const obj1 = JSON.parse('${{ env.curr }}')
             //const obj2 = JSON.parse('${{ env.prev }}')
-            
+
             return !deepEqual(curr, prev)
             //return false
 
