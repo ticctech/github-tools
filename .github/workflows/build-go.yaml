@@ -57,17 +57,14 @@ jobs:
             })
             return resp.data.tag_name
 
-      - name: Create current and previous proto json builds
+      - name: Get current and previous protos as json
         run: |
-          curr=$(buf build --exclude-imports --exclude-source-info --exclude-imports --exclude-source-info -o -#format=json)
-          prev=$(buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o -#format=json)
-          echo "curr=$curr" >> $GITHUB_ENV
-          echo "prev=$prev" >> $GITHUB_ENV
-          # echo "prev=$(cat prev.json)" >> $GITHUB_ENV
+          echo "curr=$(buf build --exclude-imports --exclude-source-info --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev=$(buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
         
-      - name: Check for proto change
+      - name: Check for proto changes
         id: proto-equal
         uses: actions/github-script@v6
         with:
