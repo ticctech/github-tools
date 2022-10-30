@@ -64,7 +64,7 @@ jobs:
       - run: npm install deep-equal
         
       - name: Proto changed? (= API changed => minor)
-        id: proto-equal
+        id: proto-changed
         uses: actions/github-script@v6
         with:
           script: |
@@ -82,10 +82,10 @@ jobs:
 
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
-            return deepEqual(obj1, obj2)
+            return !deepEqual(obj1, obj2)
 
       - run: |
-          echo "${{steps.proto-equal.outputs.result}}"
+          echo "${{steps.proto-changed.outputs.result}}"
 
       - name: Latest tag
         uses: actions/github-script@v6
