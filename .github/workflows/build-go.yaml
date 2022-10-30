@@ -36,6 +36,24 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Latest release
+        id: latest-release
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string # json
+          script: |
+            const resp = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            return resp.data.tag_name
+
+      - name: Fail when breaking proto change
+        uses: bufbuild/buf-breaking-action@v1
+        with:
+          against: .git#tag=${{ steps.latest-release.outputs.result }}
+      #     against: '.git#branch=main,ref=HEAD~1'
+      
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
         with:
@@ -51,23 +69,6 @@ jobs:
       # ---------------------------------------------------
       # Version: patch, minor, or major
       # ---------------------------------------------------
-      - name: Latest release
-        id: latest-release
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string # json
-          script: |
-            const resp = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            return resp.data.tag_name
-
-      # - name: Fail when breaking proto change
-      #   uses: bufbuild/buf-breaking-action@v1
-      #   with:
-      #     against: .git#tag=${{ steps.latest-release.outputs.result }}
-      ##     against: '.git#branch=main,ref=HEAD~1'
 
       - run: npm install semver deep-equal
         
