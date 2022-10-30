@@ -92,10 +92,11 @@ jobs:
               stdout: (data) => {
                 //myOutput += data.toString()
                 console.log(Buffer.isBuffer(data));
+                console.log('stdout', data);
               },
               stderr: (data) => {
                 //myError += data.toString()
-                console.error('error', data);
+                console.error('stderr', data);
               }
             }
 
