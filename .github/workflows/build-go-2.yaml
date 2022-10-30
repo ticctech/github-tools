@@ -81,20 +81,20 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const deepEqual = require('deep-equal');
+            const deepEqual = require('deep-equal')
 
             let myOutput = ''
             let myError = ''
 
             const options = {}
             options.listeners = {
-              stdout: (data: Buffer) => {
+              stdout: (data) => {
                 myOutput += data.toString()
-                console.log(`stdout: ${myOutput}`);
+                console.log(myOutput);
               },
-              stderr: (data: Buffer) => {
+              stderr: (data) => {
                 myError += data.toString()
-                console.error(`stderr: ${myError}`);
+                console.error(myError);
               }
             }
 
