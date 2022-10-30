@@ -71,7 +71,11 @@ jobs:
             // var isEqual = require('lodash.isequal')
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
-            console.log(assert.deepEqual(obj1, obj2, "message"))
+            try {
+              assert.deepEqual(obj1, obj2, "message")
+            } catch (e) {
+              console.log(e)
+            }
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
