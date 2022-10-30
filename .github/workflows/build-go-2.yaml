@@ -71,8 +71,8 @@ jobs:
 
       - run: npm install semver deep-equal
         
-      - name: Proto changed? (= API changed => minor)
-        id: proto-changed
+      - name: Update version (= API changed => minor)
+        id: semver
         uses: actions/github-script@v6
         with:
           script: |
@@ -100,7 +100,7 @@ jobs:
             }
 
       - run: |
-          echo "${{steps.proto-changed.outputs.result}}"
+          echo "${{steps.semver.outputs.result}}"
 
       # - name: Latest tag
       #   uses: actions/github-script@v6
