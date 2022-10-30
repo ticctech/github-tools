@@ -67,15 +67,17 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            var assert = require('assert')
-            // var isEqual = require('lodash.isequal')
+            var deepEqual = require('deep-equal');
+            //var assert = require('assert')
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
-            try {
-              assert.deepEqual(obj1, obj2, "message")
-            } catch (e) {
-              console.log(e)
-            }
+            console.log(deepEqual(obj1, obj2))
+            
+            //try {
+            //  assert.deepEqual(obj1, obj2, "message")
+            //} catch (e) {
+            //  console.log(e)
+            //}
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
