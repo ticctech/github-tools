@@ -68,8 +68,9 @@ jobs:
         with:
           result-encoding: string
           script: |
+            assert.deepEqual('${{ env.curr }}', '${{ env.prev }}')
             # const isEqual = require('is-equal')
-            var isEqual = require('lodash.isequal')
+            # var isEqual = require('lodash.isequal')
             # console.log("here")
             # var _ = require('lodash');
             # const eq = isEqual('${{ env.curr }}', '${{ env.prev }}')
