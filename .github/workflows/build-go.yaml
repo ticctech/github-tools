@@ -69,7 +69,7 @@ jobs:
           script: |
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
-            //assert.deepEqual(obj1, obj2)
+            assert.deepEqual(obj1, obj2)
             //var isEqual = require('lodash.isequal')
 
       # Build previous version and compare with this version
