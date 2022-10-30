@@ -34,7 +34,7 @@ jobs:
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
         with:
-          buf_token: ${{ secrets.BUF_PAT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
@@ -96,9 +96,6 @@ jobs:
             } else {
               return semver.inc('${{ steps.latest-release.outputs.result }}', 'minor')
             }
-
-      - run: |
-          echo "${{ steps.semver.outputs.result }}"
 
       - name: Install Go
         uses: actions/setup-go@v3
