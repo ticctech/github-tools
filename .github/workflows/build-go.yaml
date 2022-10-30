@@ -65,7 +65,7 @@ jobs:
             //  repo: context.repo.repo,
             //})
             //console.log(resp)
-            const resp2 = await github.rest.repos.listTags({
+            const resp2 = await github.repos.listTags({
                owner: context.repo.owner,
                repo: context.repo.repo,
              })
