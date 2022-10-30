@@ -51,137 +51,81 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      # ---------------------------------------------------
-      # Version: patch, minor, or major
-      # ---------------------------------------------------
+      - name: Get next version
+        id: version
+        uses: paulhatch/semantic-version@v5.0.0-alpha2
+        with:
+          major_pattern: "[tag:major]"
+          minor_pattern: "[tag:minor]"
 
-      - name: Latest tag
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+
+      - name: Run unit tests
+        env:
+          # use env vars to write unmasked secrets to .netrc file
+          BUF_USER: ${{ secrets.BUF_USER }}
+          BUF_PAT: ${{ secrets.BUF_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          echo "machine github.com login $GH_USER password $GH_PAT" >> ~/.netrc
+          echo "machine go.buf.build login $BUF_USER password $BUF_PAT" >> ~/.netrc
+          go env -w GOPRIVATE="github.com/${{ github.repository_owner }}/*"
+          go mod download
+          go test -v ./...
+
+      - name: Get next version
+        id: version
+        uses: paulhatch/semantic-version@v5.0.0-alpha2
+        with:
+          major_pattern: "[tag:major]"
+          minor_pattern: "[tag:minor]"
+
+      - name: Tag repo
         uses: actions/github-script@v6
         with:
-          # result-encoding: string
           script: |
-            const resp = await github.rest.repos.listTags({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               per_page: 1
-             })
-             console.log(resp.data[0].name)
-
-      - name: Latest release
-        id: latest
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const tag = await github.rest.repos.listTags({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               per_page: 1
-             })
-            const rel = await github.rest.repos.getLatestRelease({
+            github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
+              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
+              sha: context.sha
             })
-            //return resp.data.tag_name
-            const resp = {tag: tag.data[0].name, release: rel.data.tag_name}
-            console.log(resp)
-            return resp
 
-      - name: Current and previous protos as json
+      - name: Log in to GitHub container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image tag
+        id: tag
         run: |
-          echo ${{ steps.latest.outputs.result["release"] }}
-          echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#tag=${{ steps.latest.outputs.result.release }}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_ENV
 
-      - run: npm install deep-equal
-        
-      - name: Proto changed? (= API changed => minor)
-        id: proto-equal
+      - name: Build and push image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            BUF_USER=${{ secrets.BUF_USER }}
+            BUF_PAT=${{ secrets.BUF_PAT }}
+            GH_USER=${{ secrets.GH_USER }}
+            GH_PAT=${{ secrets.GH_PAT }}
+            GH_ORG=${{ github.repository_owner }}
+          push: true
+          tags: ${{ env.image_tag }}, ghcr.io/${{ github.repository }}:latest
+
+      - name: Create release
         uses: actions/github-script@v6
         with:
           script: |
-            var deepEqual = require('deep-equal');
-            const obj1 = JSON.parse('${{ env.curr }}')
-            const obj2 = JSON.parse('${{ env.prev }}')
-            return deepEqual(obj1, obj2)
-
-      - run: |
-          echo "${{steps.proto-equal.outputs.result}}"
-
-      # - name: Get next version
-      #   id: version
-      #   uses: paulhatch/semantic-version@v5.0.0-alpha2
-      #   with:
-      #     major_pattern: "[tag:major]"
-      #     minor_pattern: "[tag:minor]"
-
-      # - name: Install Go
-      #   uses: actions/setup-go@v3
-      #   with:
-      #     go-version: ">=1.18.0"
-
-      # - name: Run unit tests
-      #   env:
-      #     # use env vars to write unmasked secrets to .netrc file
-      #     BUF_USER: ${{ secrets.BUF_USER }}
-      #     BUF_PAT: ${{ secrets.BUF_PAT }}
-      #     GH_USER: ${{ secrets.GH_USER }}
-      #     GH_PAT: ${{ secrets.GH_PAT }}
-      #   run: |
-      #     echo "machine github.com login $GH_USER password $GH_PAT" >> ~/.netrc
-      #     echo "machine go.buf.build login $BUF_USER password $BUF_PAT" >> ~/.netrc
-      #     go env -w GOPRIVATE="github.com/${{ github.repository_owner }}/*"
-      #     go mod download
-      #     go test -v ./...
-
-      # - name: Get next version
-      #   id: version
-      #   uses: paulhatch/semantic-version@v5.0.0-alpha2
-      #   with:
-      #     major_pattern: "[tag:major]"
-      #     minor_pattern: "[tag:minor]"
-
-      # - name: Tag repo
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       github.rest.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
-      #         sha: context.sha
-      #       })
-
-      # - name: Log in to GitHub container registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Generate image tag
-      #   id: tag
-      #   run: |
-      #     echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_ENV
-
-      # - name: Build and push image
-      #   uses: docker/build-push-action@v3
-      #   with:
-      #     context: .
-      #     build-args: |
-      #       BUF_USER=${{ secrets.BUF_USER }}
-      #       BUF_PAT=${{ secrets.BUF_PAT }}
-      #       GH_USER=${{ secrets.GH_USER }}
-      #       GH_PAT=${{ secrets.GH_PAT }}
-      #       GH_ORG=${{ github.repository_owner }}
-      #     push: true
-      #     tags: ${{ env.image_tag }}, ghcr.io/${{ github.repository }}:latest
-
-      # - name: Create release
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       github.rest.repos.createRelease({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         tag_name: "${{ steps.version.outputs.version_tag }}"
-      #       })
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "${{ steps.version.outputs.version_tag }}"
+            })
