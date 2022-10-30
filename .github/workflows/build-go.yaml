@@ -69,7 +69,7 @@ jobs:
           result-encoding: string
           script: |
             const isEqual = require('is-equal')
-            const eq = isEqual(${{ env.curr }}, ${{ env.prev }})
+            const eq = isEqual('${{ env.curr }}', '${{ env.prev }}')
             console.log(eq)
             # console.log(${{ env.curr }} === ${{ env.prev }});
 
