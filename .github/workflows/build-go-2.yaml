@@ -84,30 +84,29 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
 
-            let myOutput = ''
-            let myError = ''
+            let curr = ''
+            let prev = ''
 
-            const options = {}
-            options.listeners = {
-              stdout: (data) => {
-                //myOutput += data.toString()
-                console.log(Buffer.isBuffer(data));
-                console.log('stdout', data);
-              },
-              stderr: (data) => {
-                //myError += data.toString()
-                console.error('stderr', data);
+            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners = {
+                stdout: (data) => {
+                  curr = data.toJSON()
+                }
               }
-            }
-
-            //await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], options);
-            const resp = await exec.getExecOutput('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], options);
-            console.log('resp', resp)
+            });
+            await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners = {
+                stdout: (data) => {
+                  prev = data.toJSON()
+                }
+              }
+            });
 
             //const obj1 = JSON.parse('${{ env.curr }}')
             //const obj2 = JSON.parse('${{ env.prev }}')
-            //return !deepEqual(obj1, obj2)
-            return false
+            
+            return !deepEqual(curr, prev)
+            //return false
 
       - run: |
           echo "${{steps.proto-changed.outputs.result}}"
