@@ -99,7 +99,7 @@ jobs:
               }
             }
 
-            await exec.exec('buf, ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], options);
+            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], options);
             //const resp = await exec.getExecOutput('buf build --exclude-imports --exclude-source-info -o -#format=json',[], options);
             
             //const obj1 = JSON.parse('${{ env.curr }}')
