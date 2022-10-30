@@ -88,17 +88,17 @@ jobs:
             let prev = {}
 
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners = {
+              listeners: {
                 stdout: (data) => {
                   curr = data.toJSON()
                 }
               }
             })
-            //await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-            //  listeners = {
-            //    stdout: (data) => { prev = data.toJSON() }
-            //  }
-            //})
+            await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners: {
+                stdout: (data) => { prev = data.toJSON() }
+              }
+            })
 
             //const obj1 = JSON.parse('${{ env.curr }}')
             //const obj2 = JSON.parse('${{ env.prev }}')
