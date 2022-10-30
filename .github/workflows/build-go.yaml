@@ -45,7 +45,33 @@ jobs:
       #   with:
       #     against: 'https://github.com/${{ github.repository }}.git#branch=main,ref=HEAD~1'
 
-      - name: Get latest release
+      - name: Push to Buf Schema Registry
+        uses: bufbuild/buf-push-action@v1
+        with:
+          input: proto
+          buf_token: ${{ secrets.BUF_PAT }}
+
+      # ---------------------------------------------------
+      # Version: patch, minor, or major
+      # ---------------------------------------------------
+
+      - name: List tags
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const resp = await github.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            console.log(resp)
+            const resp2 = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            console.log(resp2)
+
+      - name: Latest release tag
         id: latest-release
         uses: actions/github-script@v6
         with:
@@ -57,19 +83,14 @@ jobs:
             })
             return resp.data.tag_name
 
-      - name: Get current and previous protos as json
+      - name: Current and previous protos as json
         run: |
-          echo "curr=$(buf build \
-            --exclude-imports \
-            --exclude-source-info \
-            --exclude-imports \
-            --exclude-source-info \
-            -o -#format=json)" >> $GITHUB_ENV
+          echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
           echo "prev=$(buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
         
-      - name: Check for proto changes
+      - name: Proto changed? (= API changed => minor)
         id: proto-equal
         uses: actions/github-script@v6
         with:
@@ -82,11 +103,12 @@ jobs:
       - run: |
           echo "${{steps.proto-equal.outputs.result}}"
 
-      # - name: Push to Buf Schema Registry
-      #   uses: bufbuild/buf-push-action@v1
+      # - name: Get next version
+      #   id: version
+      #   uses: paulhatch/semantic-version@v5.0.0-alpha2
       #   with:
-      #     input: proto
-      #     buf_token: ${{ secrets.BUF_PAT }}
+      #     major_pattern: "[tag:major]"
+      #     minor_pattern: "[tag:minor]"
 
       # - name: Install Go
       #   uses: actions/setup-go@v3
