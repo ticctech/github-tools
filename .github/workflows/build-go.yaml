@@ -68,7 +68,7 @@ jobs:
         with:
           script: |
             var assert = require('assert')
-            # var isEqual = require('lodash.isequal')
+            // var isEqual = require('lodash.isequal')
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
             console.log(assert.deepEqual(obj1, obj2, "message"))
