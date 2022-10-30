@@ -60,16 +60,11 @@ jobs:
         with:
           result-encoding: string
           script: |
-            //const resp = await github.repos.listTags({
-            //  owner: context.repo.owner,
-            //  repo: context.repo.repo,
-            //})
-            //console.log(resp)
-            const resp2 = await github.repos.listTags({
+            const resp = await github.rest.repos.listTags({
                owner: context.repo.owner,
                repo: context.repo.repo,
              })
-             console.log(resp2)
+             console.log(resp)
 
       - name: Latest release tag
         id: latest-release
