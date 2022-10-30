@@ -33,6 +33,8 @@ jobs:
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
+        with:
+          buf_token: ${{ secrets.BUF_PAT }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
