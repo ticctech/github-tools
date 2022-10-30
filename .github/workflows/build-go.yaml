@@ -82,12 +82,14 @@ jobs:
               repo: context.repo.repo,
             })
             //return resp.data.tag_name
-            return {tag: tag.data.name, release: rel.data.tag_name}
+            const resp = {tag: tag.data.name, release: rel.data.tag_name}
+            console.log(resp)
+            return resp
 
       - name: Current and previous protos as json
         run: |
           echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#tag=${{steps.latest.outputs.result.release}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev=$(buf build '.git#tag=${{ steps.latest.outputs.result.release }}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
         
