@@ -68,7 +68,18 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            var deepEqual = require('deep-equal');
+            const { exec } = require('node:child_process');
+            const deepEqual = require('deep-equal');
+
+            exec("curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)", (error, stdout, stderr) => {
+              if (error) {
+                console.error(`exec error: ${error}`);
+                return;
+              }
+              console.log(`stdout: ${stdout}`);
+              console.error(`stderr: ${stderr}`);
+            });
+
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
             return deepEqual(obj1, obj2)
