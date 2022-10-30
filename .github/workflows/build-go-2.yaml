@@ -69,12 +69,6 @@ jobs:
             })
             return resp.data.tag_name
 
-      - name: Current and previous protos as json
-        run: |
-          echo ${{ steps.latest.outputs.result }}
-          echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#tag=${{ steps.latest-release.outputs.result }}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-
       - run: npm install deep-equal
         
       - name: Proto changed? (= API changed => minor)
@@ -84,27 +78,20 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
 
-            let curr = {}
-            let prev = {}
+            let curr, prev
 
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
-                stdout: (data) => {
-                  curr = data.toJSON()
-                }
+                stdout: (data) => curr = data.toJSON()
               }
             })
             await exec.exec('buf', ['build', '.git#tag=${{ steps.latest-release.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
-                stdout: (data) => { prev = data.toJSON() }
+                stdout: (data) => prev = data.toJSON()
               }
             })
 
-            //const obj1 = JSON.parse('${{ env.curr }}')
-            //const obj2 = JSON.parse('${{ env.prev }}')
-
             return !deepEqual(curr, prev)
-            //return false
 
       - run: |
           echo "${{steps.proto-changed.outputs.result}}"
