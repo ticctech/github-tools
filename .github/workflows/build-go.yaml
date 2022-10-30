@@ -55,34 +55,39 @@ jobs:
       # Version: patch, minor, or major
       # ---------------------------------------------------
 
-      - name: List tags
+      # - name: Latest tag
+      #   uses: actions/github-script@v6
+      #   with:
+      #     # result-encoding: string
+      #     script: |
+      #       const resp = await github.rest.repos.listTags({
+      #          owner: context.repo.owner,
+      #          repo: context.repo.repo,
+      #          per_page: 1,
+      #        })
+      #        console.log(resp.data.name)
+
+      - name: Latest release
+        id: latest
         uses: actions/github-script@v6
         with:
-          result-encoding: string
           script: |
-            const resp = await github.rest.repos.listTags({
+            const tag = await github.rest.repos.listTags({
                owner: context.repo.owner,
                repo: context.repo.repo,
                per_page: 1,
              })
-             console.log(resp)
-
-      - name: Latest release tag
-        id: latest-release
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const resp = await github.rest.repos.getLatestRelease({
+            const rel = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            return resp.data.tag_name
+            //return resp.data.tag_name
+            return {tag: tag.data.name, release: rel.data.tag_name}
 
       - name: Current and previous protos as json
         run: |
           echo "curr=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev=$(buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev=$(buf build '.git#tag=${{steps.latest.outputs.result.release}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
         
