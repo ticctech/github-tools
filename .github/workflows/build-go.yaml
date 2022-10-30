@@ -21,7 +21,7 @@ jobs:
     outputs:
       image-tag: ${{ env.image_tag }}
 
-    # only run if commit message contains versioning setting
+    # run unless explicitly skipped (commit message contains [skip])
     if: |
       !contains(github.event.head_commit.message, '[skip]')
 
@@ -33,6 +33,8 @@ jobs:
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
@@ -40,23 +42,68 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      # - name: Fail if breaking proto change
-      #   uses: bufbuild/buf-breaking-action@v1
-      #   with:
-      #     against: 'https://github.com/${{ github.repository }}.git#branch=main,ref=HEAD~1'
-
       - name: Push to Buf Schema Registry
         uses: bufbuild/buf-push-action@v1
         with:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - name: Get next version
-        id: version
-        uses: paulhatch/semantic-version@v5.0.0-alpha2
+      # ---------------------------------------------------
+      # Version: patch, minor, or major
+      # ---------------------------------------------------
+      - name: Latest release
+        id: latest-release
+        uses: actions/github-script@v6
         with:
-          major_pattern: "[tag:major]"
-          minor_pattern: "[tag:minor]"
+          result-encoding: string # json
+          script: |
+            const resp = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            return resp.data.tag_name
+
+      # - name: Fail when breaking proto change
+      #   uses: bufbuild/buf-breaking-action@v1
+      #   with:
+      #     against: .git#tag=${{ steps.latest-release.outputs.result }}
+      ##     against: '.git#branch=main,ref=HEAD~1'
+
+      - run: npm install semver deep-equal
+        
+      - name: Update version (= API changed => minor)
+        id: semver
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const deepEqual = require('deep-equal')
+            const semver = require('semver')
+
+            const resp = await github.rest.repos.listTags({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               per_page: 1
+             })
+             const currTag = resp.data[0].name
+
+            let currProto, prevProto
+            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners: {
+                stdout: (data) => { currProto = data.toJSON() }
+              }
+            })
+            await exec.exec('buf', ['build', '.git#tag=' + currTag, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners: {
+                stdout: (data) => { prevProto = data.toJSON() }
+              }
+            })
+            // major, premajor, minor, preminor, patch, prepatch, or prerelease
+            if (deepEqual(currProto, prevProto)) {
+              return semver.inc(currTag, 'patch')
+            } else {
+              return semver.inc(currTag, 'minor')
+            }
 
       - name: Install Go
         uses: actions/setup-go@v3
@@ -77,13 +124,6 @@ jobs:
           go mod download
           go test -v ./...
 
-      - name: Get next version
-        id: version
-        uses: paulhatch/semantic-version@v5.0.0-alpha2
-        with:
-          major_pattern: "[tag:major]"
-          minor_pattern: "[tag:minor]"
-
       - name: Tag repo
         uses: actions/github-script@v6
         with:
@@ -91,7 +131,7 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
+              ref: "refs/tags/${{ steps.semver.outputs.result }}",
               sha: context.sha
             })
 
@@ -105,7 +145,7 @@ jobs:
       - name: Generate image tag
         id: tag
         run: |
-          echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version_tag }}" >> $GITHUB_ENV
+          echo "image_tag=ghcr.io/${{ github.repository }}:${{ steps.semver.outputs.result }}" >> $GITHUB_ENV
 
       - name: Build and push image
         uses: docker/build-push-action@v3
@@ -127,5 +167,5 @@ jobs:
             github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: "${{ steps.version.outputs.version_tag }}"
+              tag_name: "${{ steps.semver.outputs.result }}"
             })
