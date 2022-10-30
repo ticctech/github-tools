@@ -59,7 +59,12 @@ jobs:
 
       - name: Get current and previous protos as json
         run: |
-          echo "curr=$(buf build --exclude-imports --exclude-source-info --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "curr=$(buf build \
+            --exclude-imports \
+            --exclude-source-info \
+            --exclude-imports \
+            --exclude-source-info \
+            -o -#format=json)" >> $GITHUB_ENV
           echo "prev=$(buf build '.git#tag=${{steps.latest-release.outputs.result}}' --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
 
       - run: npm install deep-equal
