@@ -99,7 +99,7 @@ jobs:
             }
 
       - run: |
-          echo "${{steps.semver.outputs.result}}"
+          echo ${{steps.semver.outputs.result}}
 
       # - name: Latest tag
       #   uses: actions/github-script@v6
