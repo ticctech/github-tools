@@ -66,15 +66,11 @@ jobs:
         id: buf-compare
         uses: actions/github-script@v6
         with:
-          result-encoding: string
           script: |
-            assert.deepEqual('${{ env.curr }}', '${{ env.prev }}')
-            # const isEqual = require('is-equal')
+            const obj1 = JSON.parse('${{ env.curr }}')
+            const obj2 = JSON.parse('${{ env.prev }}')
+            assert.deepEqual(obj1, obj2)
             # var isEqual = require('lodash.isequal')
-            # console.log("here")
-            # var _ = require('lodash');
-            # const eq = isEqual('${{ env.curr }}', '${{ env.prev }}')
-            # console.log(eq)
 
       # Build previous version and compare with this version
       # buf build https://github.com/ticctech/workflow.git#tag=v0.0.243 --exclude-imports --exclude-source-info -o image.json
