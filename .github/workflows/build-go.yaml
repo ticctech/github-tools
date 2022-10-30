@@ -67,6 +67,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            var assert = require('assert')
             const obj1 = JSON.parse('${{ env.curr }}')
             const obj2 = JSON.parse('${{ env.prev }}')
             assert.deepEqual(obj1, obj2)
