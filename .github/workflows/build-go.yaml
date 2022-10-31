@@ -36,18 +36,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Latest release
-      #   id: latest-release
-      #   uses: actions/github-script@v6
-      #   with:
-      #     result-encoding: string # json
-      #     script: |
-      #       const resp = await github.rest.repos.getLatestRelease({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #       })
-      #       return resp.data.tag_name
-
       - name: Latest tag
         run: |
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
@@ -86,25 +74,22 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
             const semver = require('semver')
-
-            const latestTag = '${{ env.latest_tag }}'
-
             let currProto, prevProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
-            await exec.exec('buf', ['build', '.git#tag=' + latestTag, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
             })
             // major, premajor, minor, preminor, patch, prepatch, or prerelease
             if (deepEqual(currProto, prevProto)) {
-              return semver.inc(latestTag, 'patch')
+              return semver.inc('${{ env.latest_tag }}', 'patch')
             } else {
-              return semver.inc(latestTag, 'minor')
+              return semver.inc('${{ env.latest_tag }}', 'minor')
             }
 
       - run: echo ${{ steps.semver.outputs.result }}
