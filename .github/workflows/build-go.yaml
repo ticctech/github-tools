@@ -36,22 +36,27 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Latest release
-        id: latest-release
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string # json
-          script: |
-            const resp = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            return resp.data.tag_name
+      # - name: Latest release
+      #   id: latest-release
+      #   uses: actions/github-script@v6
+      #   with:
+      #     result-encoding: string # json
+      #     script: |
+      #       const resp = await github.rest.repos.getLatestRelease({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #       })
+      #       return resp.data.tag_name
+
+      - name: Latest tag
+        run: |
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Fail when breaking proto change
         uses: bufbuild/buf-breaking-action@v1
         with:
-          against: .git#tag=${{ steps.latest-release.outputs.result }}
+          against: .git#tag=${{ env.latest_tag }}
+          # against: .git#tag=${{ steps.latest-release.outputs.result }}
           # against: '.git#branch=main,ref=HEAD~1'
           buf_token: ${{ secrets.BUF_PAT }}
 
@@ -82,13 +87,7 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            // const resp = await github.rest.repos.listTags({
-            //   owner: context.repo.owner,
-            //    repo: context.repo.repo,
-            //    per_page: 1
-            //  })
-            //  const latestTag = resp.data[0].name
-            const latestTag = '${{ steps.latest-release.outputs.result }}'
+            const latestTag = '${{ env.latest_tag }}'
 
             let currProto, prevProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
