@@ -54,7 +54,7 @@ jobs:
           against: .git#tag=${{ steps.latest-release.outputs.result }}
           # against: '.git#branch=main,ref=HEAD~1'
           buf_token: ${{ secrets.BUF_PAT }}
-          
+
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
         with:
@@ -73,7 +73,7 @@ jobs:
 
       - run: npm install semver deep-equal
         
-      - name: Update version (= API changed => minor)
+      - name: Update version
         id: semver
         uses: actions/github-script@v6
         with:
@@ -82,12 +82,12 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            # const resp = await github.rest.repos.listTags({
-            #    owner: context.repo.owner,
-            #    repo: context.repo.repo,
-            #    per_page: 1
-            #  })
-            #  const latestTag = resp.data[0].name
+            // const resp = await github.rest.repos.listTags({
+            //   owner: context.repo.owner,
+            //    repo: context.repo.repo,
+            //    per_page: 1
+            //  })
+            //  const latestTag = resp.data[0].name
             const latestTag = '${{ steps.latest-release.outputs.result }}'
 
             let currProto, prevProto
