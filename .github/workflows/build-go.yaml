@@ -154,7 +154,7 @@ jobs:
           push: true
           tags: ${{ env.image_tag }}, ghcr.io/${{ github.repository }}:latest
 
-      - name: Create release
+      - name: Tag repo
         uses: actions/github-script@v6
         with:
           script: |
@@ -164,6 +164,11 @@ jobs:
               ref: "refs/tags/${{ steps.semver.outputs.result }}",
               sha: context.sha
             })
+      
+      - name: Create release
+        uses: actions/github-script@v6
+        with:
+          script: |
             github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
