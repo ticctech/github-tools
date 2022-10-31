@@ -53,7 +53,7 @@ jobs:
         with:
           against: .git#tag=${{ steps.latest-release.outputs.result }}
       #     against: '.git#branch=main,ref=HEAD~1'
-      
+
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
         with:
@@ -81,12 +81,13 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            const resp = await github.rest.repos.listTags({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               per_page: 1
-             })
-             const currTag = resp.data[0].name
+            # const resp = await github.rest.repos.listTags({
+            #    owner: context.repo.owner,
+            #    repo: context.repo.repo,
+            #    per_page: 1
+            #  })
+            #  const latestTag = resp.data[0].name
+            const latestTag = '${{ steps.latest-release.outputs.result }}'
 
             let currProto, prevProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
@@ -94,17 +95,19 @@ jobs:
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
-            await exec.exec('buf', ['build', '.git#tag=' + currTag, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('buf', ['build', '.git#tag=' + latestTag, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
             })
             // major, premajor, minor, preminor, patch, prepatch, or prerelease
             if (deepEqual(currProto, prevProto)) {
-              return semver.inc(currTag, 'patch')
+              return semver.inc(latestTag, 'patch')
             } else {
-              return semver.inc(currTag, 'minor')
+              return semver.inc(latestTag, 'minor')
             }
+
+      - run: echo ${{ steps.semver.outputs.result }}
 
       - name: Install Go
         uses: actions/setup-go@v3
@@ -124,17 +127,6 @@ jobs:
           go env -w GOPRIVATE="github.com/${{ github.repository_owner }}/*"
           go mod download
           go test -v ./...
-
-      - name: Tag repo
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.semver.outputs.result }}",
-              sha: context.sha
-            })
 
       - name: Log in to GitHub container registry
         uses: docker/login-action@v2
@@ -165,6 +157,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ steps.semver.outputs.result }}",
+              sha: context.sha
+            })
             github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
