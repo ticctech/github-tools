@@ -51,9 +51,10 @@ jobs:
       - name: Fail when breaking proto change
         uses: bufbuild/buf-breaking-action@v1
         with:
-          # against: .git#tag=${{ steps.latest-release.outputs.result }}
-          against: '.git#branch=main,ref=HEAD~1'
-
+          against: .git#tag=${{ steps.latest-release.outputs.result }}
+          # against: '.git#branch=main,ref=HEAD~1'
+          buf_token: ${{ secrets.BUF_PAT }}
+          
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
         with:
