@@ -80,7 +80,7 @@ jobs:
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
-            await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
