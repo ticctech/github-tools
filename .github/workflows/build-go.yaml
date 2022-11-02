@@ -95,7 +95,7 @@ jobs:
             let prevProto
             // '.git#branch=main,ref=HEAD~1'
             // '.git#tag=${{ steps.latest-tag.outputs.result }}'
-            await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
