@@ -105,7 +105,7 @@ jobs:
               }
               return 'minor'
             }
-            return `v${semver.inc('${{ steps.latest-tag.outputs.result }}', increment()}`
+            return `v${semver.inc('${{ steps.latest-tag.outputs.result }}', increment())}`
 
       - name: Install Go
         uses: actions/setup-go@v3
