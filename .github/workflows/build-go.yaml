@@ -99,7 +99,7 @@ jobs:
             } else {
               increment = 'minor'
             }
-            return semver.inc('${{ env.latest_tag }}', increment)
+            return `v${semver.inc('${{ env.latest_tag }}', increment)}`
 
       - name: Install Go
         uses: actions/setup-go@v3
