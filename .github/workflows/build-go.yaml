@@ -54,12 +54,19 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
+      # buf push --tag <TAG_NAME>
+      - name: Push to Buf Schema Registry
+        uses: bufbuild/buf-push-action@v1
+        with:
+          input: proto
+          buf_token: ${{ secrets.BUF_PAT }}
+
       # ---------------------------------------------------
       # Version: patch, minor, or major
       # ---------------------------------------------------
 
       - run: npm install semver deep-equal
-        
+
       - name: Update version
         id: semver
         uses: actions/github-script@v6
@@ -75,9 +82,9 @@ jobs:
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
-            
-            //await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-            await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+
+            await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
@@ -139,7 +146,7 @@ jobs:
             GH_ORG=${{ github.repository_owner }}
           push: true
           tags: ${{ env.image_tag }}, ghcr.io/${{ github.repository }}:latest
-      
+
       # Create release (and release's tag)
       - name: Create release
         uses: actions/github-script@v6
@@ -150,10 +157,3 @@ jobs:
               repo: context.repo.repo,
               tag_name: "${{ steps.semver.outputs.result }}"
             })
-
-      # buf push --tag <TAG_NAME>
-      - name: Push to Buf Schema Registry
-        uses: bufbuild/buf-push-action@v1
-        with:
-          input: proto
-          buf_token: ${{ secrets.BUF_PAT }}
