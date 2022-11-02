@@ -74,7 +74,9 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - name: Get protos json
+      - name: Current and previous protos as json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "curr_proto=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
           echo "prev_proto=$(buf build https://github.com/ticctech/workflow.git#tag=v0.0.250 --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
