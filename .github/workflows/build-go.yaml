@@ -74,6 +74,11 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
+      - name: Get proto json
+        run: |
+          echo "curr_proto=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+          echo "prev_proto=$(buf build https://github.com/ticctech/workflow.git#tag=v0.0.250 --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
+
       - run: npm install semver deep-equal
 
       - name: Increment version
@@ -85,24 +90,27 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            let currProto
-            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners: {
-                stdout: (data) => { currProto = data.toJSON() }
-              }
-            })
+            //let currProto
+            //await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //  listeners: {
+            //    stdout: (data) => { currProto = data.toJSON() }
+            //  }
+            //})
 
-            let prevProto
-            // '.git#branch=main,ref=HEAD~1'
-            // '.git#tag=${{ steps.latest-tag.outputs.result }}'
-            await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              env: {
-                GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-              },
-              listeners: {
-                stdout: (data) => { prevProto = data.toJSON() }
-              }
-            })
+            //let prevProto
+            //// '.git#branch=main,ref=HEAD~1'
+            //// '.git#tag=${{ steps.latest-tag.outputs.result }}'
+            //await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //  env: {
+            //    GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+            //  },
+            //  listeners: {
+            //    stdout: (data) => { prevProto = data.toJSON() }
+            //  }
+            //})
+
+            const currProto = JSON.parse(process.env.curr_proto)
+            const prevProto = JSON.parse(process.env.prev_proto)
 
             let increment = ''
             if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
