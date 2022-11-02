@@ -54,13 +54,6 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      # buf push --tag <TAG_NAME>
-      - name: Push to Buf Schema Registry
-        uses: bufbuild/buf-push-action@v1
-        with:
-          input: proto
-          buf_token: ${{ secrets.BUF_PAT }}
-
       # ---------------------------------------------------
       # Version: patch, minor, or major
       # ---------------------------------------------------
@@ -75,7 +68,7 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
             const semver = require('semver')
-            
+
             let currProto, prevProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
@@ -157,3 +150,10 @@ jobs:
               repo: context.repo.repo,
               tag_name: "${{ steps.semver.outputs.result }}"
             })
+
+      # buf push --tag <TAG_NAME>
+      - name: Push to Buf Schema Registry
+        uses: bufbuild/buf-push-action@v1
+        with:
+          input: proto
+          buf_token: ${{ secrets.BUF_PAT }}
