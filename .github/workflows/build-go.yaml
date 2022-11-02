@@ -79,8 +79,6 @@ jobs:
       - name: Increment version
         id: semver
         uses: actions/github-script@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           result-encoding: string
           script: |
@@ -98,6 +96,9 @@ jobs:
             // '.git#branch=main,ref=HEAD~1'
             // '.git#tag=${{ steps.latest-tag.outputs.result }}'
             await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              env: {
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              },
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
