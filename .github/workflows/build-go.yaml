@@ -97,7 +97,7 @@ jobs:
             // '.git#tag=${{ steps.latest-tag.outputs.result }}'
             await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               env: {
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                'GITHUB_TOKEN': ${{ secrets.GITHUB_TOKEN }}
               },
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
