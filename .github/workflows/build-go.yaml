@@ -74,7 +74,7 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - name: Get proto json
+      - name: Get protos json
         run: |
           echo "curr_proto=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
           echo "prev_proto=$(buf build https://github.com/ticctech/workflow.git#tag=v0.0.250 --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
@@ -109,8 +109,8 @@ jobs:
             //  }
             //})
 
-            const currProto = JSON.parse(process.env.curr_proto)
-            const prevProto = JSON.parse(process.env.prev_proto)
+            const currProto = JSON.parse(${{ env.curr_proto }})
+            const prevProto = JSON.parse(${{ env.prev_proto }})
 
             let increment = ''
             if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
