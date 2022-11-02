@@ -99,7 +99,7 @@ jobs:
             //})
 
             const getProtoJson = async (version) => {
-              await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              await exec.exec('buf', ['build', version, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
                 listeners: {stdout: (data) => { 
                   return data.toJSON()
                 }}
