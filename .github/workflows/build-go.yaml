@@ -54,6 +54,7 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
+      # buf push --tag <TAG_NAME>
       - name: Push to Buf Schema Registry
         uses: bufbuild/buf-push-action@v1
         with:
@@ -74,13 +75,16 @@ jobs:
           script: |
             const deepEqual = require('deep-equal')
             const semver = require('semver')
+            
             let currProto, prevProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
-            await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            
+            //await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
