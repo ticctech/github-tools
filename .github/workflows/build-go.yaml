@@ -38,7 +38,7 @@ jobs:
 
       - name: Latest tag
         run: |
-          echo "latest_tag=v$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Fail when breaking proto change
         uses: bufbuild/buf-breaking-action@v1
