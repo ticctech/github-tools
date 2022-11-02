@@ -40,13 +40,14 @@ jobs:
         run: |
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
-      # - name: Fail when breaking proto change
-      #   uses: bufbuild/buf-breaking-action@v1
-      #   with:
-      #     against: .git#tag=${{ env.latest_tag }}
-      #     # against: .git#tag=${{ steps.latest-release.outputs.result }}
-      #     # against: '.git#branch=main,ref=HEAD~1'
-      #     buf_token: ${{ secrets.BUF_PAT }}
+      - name: Fail when breaking proto change
+        uses: bufbuild/buf-breaking-action@v1
+        if: |
+          !contains(${{ env.latest_tag }}, 'alpha')
+        with:
+          against: .git#tag=${{ env.latest_tag }}
+          # against: '.git#branch=main,ref=HEAD~1'
+          buf_token: ${{ secrets.BUF_PAT }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
@@ -61,13 +62,9 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      # ---------------------------------------------------
-      # Version: patch, minor, or major
-      # ---------------------------------------------------
-
       - run: npm install semver deep-equal
 
-      - name: Update version
+      - name: Increment version
         id: semver
         uses: actions/github-script@v6
         with:
@@ -76,15 +73,16 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            let currProto, prevProto
+            let currProto
             await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { currProto = data.toJSON() }
               }
             })
 
+            let prevProto
+            // '.git#branch=main,ref=HEAD~1'
             await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-            //await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
@@ -147,13 +145,17 @@ jobs:
           push: true
           tags: ${{ env.image_tag }}, ghcr.io/${{ github.repository }}:latest
 
-      # Create release (and release's tag)
+      # Create release (incl. underlying tag)
       - name: Create release
         uses: actions/github-script@v6
         with:
           script: |
+            const semver = require('semver')
+            const tag = '${{ steps.semver.outputs.result }}'
+
             github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: "${{ steps.semver.outputs.result }}"
+              tag_name: tag
+              prerelease: semver.prerelease(tag)?.length > 0
             })
