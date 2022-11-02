@@ -88,7 +88,7 @@ jobs:
             // current and previous protos as json
             let currProto
             let prevProto
-            const cw = null
+            const cw = '.'
             await exec.exec('buf', ['build', cw, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {stdout: (data) => { currProto = data.toJSON() }}
             })
