@@ -109,8 +109,10 @@ jobs:
             //  }
             //})
 
-            const currProto = JSON.parse('${{ env.curr_proto }}')
-            const prevProto = JSON.parse('${{ env.prev_proto }}')
+            //const currProto = JSON.parse('${{ env.curr_proto }}')
+            //const prevProto = JSON.parse('${{ env.prev_proto }}')
+            const currProto = ${{ env.curr_proto }}
+            const prevProto = ${{ env.prev_proto }}
 
             let increment = ''
             if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
