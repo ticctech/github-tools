@@ -85,19 +85,6 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
-            // current and previous protos as json
-            //let currProto
-            //let prevProto
-            //const cw = '.'
-            //await exec.exec('buf', ['build', cw, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-            //  listeners: {stdout: (data) => { currProto = data.toJSON() }}
-            //})
-            
-            //const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
-            //await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-            //  listeners: {stdout: (data) => { prevProto = data.toJSON() }}
-            //})
-
             const getProtoJson = async (version) => {
               await exec.exec('buf', ['build', version, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
                 listeners: {stdout: (data) => { 
@@ -106,10 +93,11 @@ jobs:
               })
             }
 
-            const currProto = await getProtoJson('.')
-            const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
-            const prevProto = await getProtoJson(latestRelease)
+            const latestTag = '${{ steps.latest-tag.outputs.result }}'
+            const latestRelease = `https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${latestTag}`
 
+            const currProto = await getProtoJson('.')
+            const prevProto = await getProtoJson(latestRelease)
 
             const increment = () => {
               if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
@@ -119,7 +107,8 @@ jobs:
               }
               return 'minor'
             }
-            return `v${semver.inc('${{ steps.latest-tag.outputs.result }}', increment())}`
+
+            return `v${semver.inc(latestTag, increment())}`
 
       - name: Install Go
         uses: actions/setup-go@v3
