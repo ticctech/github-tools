@@ -88,7 +88,8 @@ jobs:
             // current and previous protos as json
             let currProto
             let prevProto
-            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            const cw = null
+            await exec.exec('buf', ['build', cw, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {stdout: (data) => { currProto = data.toJSON() }}
             })
             // '.git#branch=main,ref=HEAD~1'
@@ -96,6 +97,18 @@ jobs:
             await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {stdout: (data) => { prevProto = data.toJSON() }}
             })
+
+            const getProtoJson = () => {
+              const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
+              await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+                listeners: {stdout: (data) => { 
+                  //prevProto = data.toJSON()
+                  return data.toJSON()
+                }}
+              })
+            }
+            prevProto = getProtoJson()
+
 
             const increment = () => {
               if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
