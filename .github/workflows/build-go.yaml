@@ -57,7 +57,7 @@ jobs:
         if: |
           !contains(${{ steps.latest-tag.outputs.result }}, 'alpha')
         with:
-          against: .git#tag=${{ steps.latest-tag.outputs.result }}
+          against: https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}
           # against: '.git#branch=main,ref=HEAD~1'
           buf_token: ${{ secrets.BUF_PAT }}
 
@@ -95,14 +95,11 @@ jobs:
             let prevProto
             // '.git#branch=main,ref=HEAD~1'
             // '.git#tag=${{ steps.latest-tag.outputs.result }}'
-            await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            await exec.exec('buf', ['build', 'https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
             })
-
-            // major, premajor, minor, preminor, patch, prepatch, or prerelease
-            // semver.inc('1.2.3', 'prerelease', 'beta')
 
             let increment = ''
             if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
