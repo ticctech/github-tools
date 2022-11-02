@@ -86,28 +86,29 @@ jobs:
             const semver = require('semver')
 
             // current and previous protos as json
-            let currProto
-            let prevProto
-            const cw = '.'
-            await exec.exec('buf', ['build', cw, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners: {stdout: (data) => { currProto = data.toJSON() }}
-            })
-            // '.git#branch=main,ref=HEAD~1'
-            const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
-            await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners: {stdout: (data) => { prevProto = data.toJSON() }}
-            })
+            //let currProto
+            //let prevProto
+            //const cw = '.'
+            //await exec.exec('buf', ['build', cw, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //  listeners: {stdout: (data) => { currProto = data.toJSON() }}
+            //})
+            
+            //const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
+            //await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            //  listeners: {stdout: (data) => { prevProto = data.toJSON() }}
+            //})
 
-            const getProtoJson = async () => {
-              const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
+            const getProtoJson = async (version) => {
               await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
                 listeners: {stdout: (data) => { 
-                  //prevProto = data.toJSON()
                   return data.toJSON()
                 }}
               })
             }
-            prevProto = await getProtoJson()
+
+            const currProto = await getProtoJson('.')
+            const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
+            const prevProto = await getProtoJson(latestRelease)
 
 
             const increment = () => {
