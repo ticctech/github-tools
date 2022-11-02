@@ -82,7 +82,8 @@ jobs:
 
             let prevProto
             // '.git#branch=main,ref=HEAD~1'
-            await exec.exec('buf', ['build', '.git#tag=${{ env.latest_tag }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+            // '.git#tag=${{ env.latest_tag }}'
+            await exec.exec('buf', ['build', '.git#branch=main,ref=HEAD~1', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
               listeners: {
                 stdout: (data) => { prevProto = data.toJSON() }
               }
