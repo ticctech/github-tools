@@ -74,11 +74,6 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - name: Current and previous protos as json
-        run: |
-          echo "curr_proto=$(buf build --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-          echo "prev_proto=$(buf build https://${{ secrets.GH_PAT }}@github.com/ticctech/workflow.git#tag=v0.0.250 --exclude-imports --exclude-source-info -o -#format=json)" >> $GITHUB_ENV
-
       - run: npm install semver deep-equal
 
       - name: Increment version
@@ -90,34 +85,27 @@ jobs:
             const deepEqual = require('deep-equal')
             const semver = require('semver')
 
+            // current and previous protos as json
             let currProto
-            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners: {
-                stdout: (data) => { currProto = data.toJSON() }
-              }
-            })
-
             let prevProto
+            await exec.exec('buf', ['build', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners: {stdout: (data) => { currProto = data.toJSON() }}
+            })
             // '.git#branch=main,ref=HEAD~1'
-            // '.git#tag=${{ steps.latest-tag.outputs.result }}'
-            await exec.exec('buf', ['build', 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}', '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
-              listeners: {
-                stdout: (data) => { prevProto = data.toJSON() }
-              }
+            const latestRelease = 'https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}'
+            await exec.exec('buf', ['build', latestRelease, '--exclude-imports', '--exclude-source-info', '-o', '-#format=json'], {
+              listeners: {stdout: (data) => { prevProto = data.toJSON() }}
             })
 
-            //const currProto = ${{ env.curr_proto }}
-            //const prevProto = ${{ env.prev_proto }}
-
-            let increment = ''
-            if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
-              increment = 'prerelease'
-            } else if (deepEqual(currProto, prevProto)) {
-              increment = 'patch'
-            } else {
-              increment = 'minor'
+            const increment = () => {
+              if (semver.prerelease('${{ steps.latest-tag.outputs.result }}')){
+                return 'prerelease'
+              } else if (deepEqual(currProto, prevProto)) {
+                return 'patch'
+              }
+              return 'minor'
             }
-            return `v${semver.inc('${{ steps.latest-tag.outputs.result }}', increment)}`
+            return `v${semver.inc('${{ steps.latest-tag.outputs.result }}', increment()}`
 
       - name: Install Go
         uses: actions/setup-go@v3
