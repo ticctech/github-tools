@@ -13,9 +13,9 @@ on:
       image-tag:
         required: true
         type: string
-      git-tag:
-        required: true
-        type: string
+      # git-tag:
+      #   required: true
+      #   type: string
       api-spec:
         type: string
 jobs:
@@ -44,14 +44,14 @@ jobs:
 
       - run: npm install semver
 
-      - name: Get major version
-        id: version
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const semver = require('semver')
-            return `v${semver.major(${{ inputs.git-tag }})}`
+      # - name: Get major version
+      #   id: version
+      #   uses: actions/github-script@v6
+      #   with:
+      #     result-encoding: string
+      #     script: |
+      #       const semver = require('semver')
+      #       return `v${semver.major(${{ inputs.git-tag }})}`
 
       - uses: actions/checkout@v3
 
@@ -61,18 +61,19 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let apiSpec = '';
+            let apiSpec = ''
             if('${{ inputs.api-spec }}'.length > 0) {
-              apiSpec = require('${{ inputs.api-spec }}');
-              apiSpec = btoa(JSON.stringify(apiSpec));
+              apiSpec = require('${{ inputs.api-spec }}')
+              apiSpec = btoa(JSON.stringify(apiSpec))
             }
 
-            let p = 'env=${{ steps.env.outputs.result }}';
-            p += ' appName=${{ github.event.repository.name }}-${{ steps.version.outputs.result }}';
-            p += ' imageTag=${{ inputs.image-tag }}';
-            p += ' ghcrUser=${{ secrets.GHCR_USER }}';
-            p += ' ghcrPat=${{ secrets.GHCR_PAT }}';
-            p += ' apiSpec=' + apiSpec;
+            let p = 'env=${{ steps.env.outputs.result }}'
+            //p += ' appName=${{ github.event.repository.name }}-${{ steps.version.outputs.result }}'
+            p += ' appName=${{ github.event.repository.name }}'
+            p += ' imageTag=${{ inputs.image-tag }}'
+            p += ' ghcrUser=${{ secrets.GHCR_USER }}'
+            p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+            p += ' apiSpec=' + apiSpec
             return p
           result-encoding: string
 
@@ -98,7 +99,7 @@ jobs:
       - name: Deploy bicep
         run: |
           az deployment group create \
-            --name ${{ github.event.repository.name }}-${{ steps.version.outputs.result }} \
+            --name ${{ github.event.repository.name }} \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \
