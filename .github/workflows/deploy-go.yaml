@@ -65,7 +65,7 @@ jobs:
             }
 
             let p = 'env=${{ steps.env.outputs.result }}'
-            p += ' appName=${{ github.event.repository.name }}-${{ steps.version.outputs.result }}'
+            p += ' appName=${{ github.event.repository.name }}'
             p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
@@ -95,7 +95,7 @@ jobs:
       - name: Deploy bicep
         run: |
           az deployment group create \
-            --name ${{ github.event.repository.name }}-${{ steps.version.outputs.result }} \
+            --name ${{ github.event.repository.name }} \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \
