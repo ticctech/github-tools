@@ -13,6 +13,8 @@ on:
       tag:
         required: true
         type: string
+      api-name:
+        type: string
       api-spec:
         type: string
 jobs:
@@ -59,7 +61,7 @@ jobs:
         with:
           script: |
             let apiSpec = ''
-            if('${{ inputs.api-spec }}'.length > 0) {
+            if ('${{ inputs.api-spec }}'.length > 0) {
               apiSpec = require('${{ inputs.api-spec }}')
               apiSpec = btoa(JSON.stringify(apiSpec))
             }
@@ -69,6 +71,7 @@ jobs:
             p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
+            p += ' apiName=${{ inputs.api-name }'
             p += ' apiSpec=' + apiSpec
             return p
           result-encoding: string

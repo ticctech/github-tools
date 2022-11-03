@@ -30,6 +30,9 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
+@description('The name to use for the API')
+param apiName string = '${appName}s'
+
 @description('The API specification in openapi format')
 param apiSpec string = ''
 
@@ -142,7 +145,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
 // -----------------------------
 // Deploy Container App API
 // -----------------------------
-var apiName = '${appName}s'
+// var apiName = '${appName}s'
 var apiEnabled = length(apiSpec) > 0
 
 // get reference to API manager
