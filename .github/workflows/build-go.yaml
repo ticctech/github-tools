@@ -40,7 +40,7 @@ jobs:
         id: prev-tag
         uses: actions/github-script@v6
         with:
-          result-encoding: string # json
+          result-encoding: string
           script: |
             const resp = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
@@ -157,5 +157,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: tag,
-              prerelease: semver.prerelease(tag)?.length > 0
+              prerelease: false
+              // prerelease: semver.prerelease(tag)?.length > 0
             })
