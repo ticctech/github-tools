@@ -52,14 +52,14 @@ jobs:
             })
             return resp.data.tag_name
 
-      # - name: Fail when breaking proto change
-      #   uses: bufbuild/buf-breaking-action@v1
-      #   if: |
-      #     !contains(${{ steps.latest-tag.outputs.result }}, 'alpha')
-      #   with:
-      #     against: https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}
-      #     # against: '.git#branch=main,ref=HEAD~1'
-      #     buf_token: ${{ secrets.BUF_PAT }}
+      - name: Fail when breaking proto change
+        uses: bufbuild/buf-breaking-action@v1
+        if: |
+          !contains(${{ steps.latest-tag.outputs.result }}, 'alpha')
+        with:
+          against: https://github.com/${{ github.repository }}.git#tag=${{ steps.latest-tag.outputs.result }}
+          # against: '.git#branch=main,ref=HEAD~1'
+          buf_token: ${{ secrets.BUF_PAT }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
