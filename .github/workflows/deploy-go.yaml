@@ -13,6 +13,9 @@ on:
       image-tag:
         required: true
         type: string
+      git-tag:
+        required: true
+        type: string
       api-spec:
         type: string
 jobs:
@@ -28,6 +31,7 @@ jobs:
         id: env
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             switch('${{ inputs.environment }}') {
               case 'staging':
@@ -37,7 +41,17 @@ jobs:
               default:
                 return "dev"
             }
+
+      - run: npm install semver
+
+      - name: Get major version
+        id: version
+        uses: actions/github-script@v6
+        with:
           result-encoding: string
+          script: |
+            const semver = require('semver')
+            return `v${semver.major(${{ inputs.git-tag }})}`
 
       - uses: actions/checkout@v3
 
@@ -54,7 +68,7 @@ jobs:
             }
 
             let p = 'env=${{ steps.env.outputs.result }}';
-            p += ' appName=${{ github.event.repository.name }}';
+            p += ' appName=${{ github.event.repository.name }}-${{ steps.version.outputs.result }}';
             p += ' imageTag=${{ inputs.image-tag }}';
             p += ' ghcrUser=${{ secrets.GHCR_USER }}';
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}';
@@ -84,7 +98,7 @@ jobs:
       - name: Deploy bicep
         run: |
           az deployment group create \
-            --name ${{ github.event.repository.name }} \
+            --name ${{ github.event.repository.name }}-${{ steps.version.outputs.result }} \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \

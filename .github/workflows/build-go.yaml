@@ -11,6 +11,9 @@ on:
       image-tag:
         description: Tag for the docker image
         value: ${{ jobs.image.outputs.image-tag }}
+      git-tag:
+        description: The git tag for the build
+        value: ${{ jobs.image.outputs.git-tag }}
 
 jobs:
   image:
@@ -20,6 +23,7 @@ jobs:
       packages: write
     outputs:
       image-tag: ${{ env.image_tag }}
+      git-tag: ${{ steps.semver.outputs.result }}
 
     # run unless explicitly skipped (commit message contains [skip])
     if: |
