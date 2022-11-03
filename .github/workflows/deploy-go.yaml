@@ -48,8 +48,7 @@ jobs:
           result-encoding: string
           script: |
             const semver = require('semver')
-            const mjr = semver.major(${{ inputs.tag }})
-            return `v${mjr}`
+            return `v${semver.major('${{ inputs.tag }}')}`
 
       - uses: actions/checkout@v3
 
