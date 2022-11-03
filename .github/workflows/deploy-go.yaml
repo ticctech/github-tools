@@ -71,7 +71,7 @@ jobs:
             p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' apiName=${{ inputs.api-name }'
+            p += ' apiName=${{ inputs.api-name }}'
             p += ' apiSpec=' + apiSpec
             return p
           result-encoding: string
