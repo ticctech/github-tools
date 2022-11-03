@@ -102,7 +102,7 @@ jobs:
             const increment = () => {
               if (semver.prerelease(latestTag)){
                 return 'prerelease'
-              } else if (jsonEqual(currProto, prevProto)) {
+              } else if (jsonEqual(currProto, prevProto, { arrayOrder: false })) {
                 return 'patch'
               }
               return 'minor'
