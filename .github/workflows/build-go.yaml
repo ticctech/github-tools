@@ -48,14 +48,14 @@ jobs:
             })
             return resp.data.tag_name
 
-      # - name: Fail when breaking proto change
-      #   uses: bufbuild/buf-breaking-action@v1
-      #   if: |
-      #     !contains(${{ steps.prev-tag.outputs.result }}, 'alpha')
-      #   with:
-      #     against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
-      #     # against: '.git#branch=main,ref=HEAD~1'
-      #     buf_token: ${{ secrets.BUF_PAT }}
+      - name: Fail when breaking proto change
+        uses: bufbuild/buf-breaking-action@v1
+        if: |
+          !contains(${{ steps.prev-tag.outputs.result }}, 'alpha')
+        with:
+          against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
+          # against: '.git#branch=main,ref=HEAD~1'
+          buf_token: ${{ secrets.BUF_PAT }}
 
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
@@ -103,9 +103,7 @@ jobs:
               }
               return 'minor'
             }
-
-            //return `v${semver.inc(latestTag, increment())}`
-            return 'patch'
+            return `v${semver.inc(latestTag, increment())}`
 
       - name: Install Go
         uses: actions/setup-go@v3
