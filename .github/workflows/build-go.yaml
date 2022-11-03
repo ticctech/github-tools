@@ -74,7 +74,7 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
-      - run: npm install semver node-json-equal
+      - run: npm install semver json-diff
 
       - name: Increment version
         id: semver
@@ -82,7 +82,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const jsonEqual = require('node-json-equal')
+            const jsonDiff = require('json-diff')
             const semver = require('semver')
 
             const getProtoJson = async (version) => {
@@ -102,7 +102,7 @@ jobs:
             const increment = () => {
               if (semver.prerelease(latestTag)){
                 return 'prerelease'
-              } else if (jsonEqual(currProto, prevProto, { arrayOrder: false })) {
+              } else if (jsonDiff.diff(currProto, prevProto, { sort: true })) {
                 return 'patch'
               }
               return 'minor'
