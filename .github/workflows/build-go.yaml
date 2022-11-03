@@ -92,8 +92,8 @@ jobs:
             const latestTag = '${{ steps.prev-tag.outputs.result }}'
             const latestRelease = `https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git#tag=${latestTag}`
 
-            //const currProto = await getProtoJson('.')
-            //const prevProto = await getProtoJson(latestRelease)
+            const currProto = await getProtoJson('.')
+            const prevProto = await getProtoJson(latestRelease)
 
             const increment = () => {
               if (semver.prerelease(latestTag)){
