@@ -90,7 +90,7 @@ jobs:
 
             const latestTag = '${{ steps.prev-tag.outputs.result }}'
 
-            const increment = () => {
+            const increment = async () => {
               if (semver.prerelease(latestTag)){
                 return 'prerelease'
               }
@@ -105,7 +105,7 @@ jobs:
               }
               return 'minor'
             }
-            return `v${semver.inc(latestTag, increment())}`
+            return `v${semver.inc(latestTag, await increment())}`
 
       - name: Install Go
         uses: actions/setup-go@v3
