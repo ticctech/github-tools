@@ -36,7 +36,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.createOrUpdateFileContents({
+            github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
               repo: 'docs',
               path: `api/${context.repo.repo}.swagger.json`,
