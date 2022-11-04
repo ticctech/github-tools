@@ -108,20 +108,20 @@ jobs:
             }
             return `v${semver.inc(latestTag, await increment())}`
 
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ">=1.18.0"
-
-      # update api docs
-      - run: |
-          git clone https://${{ secrets.GH_PAT }}@github.com/docs target
+      - name: Update api docs
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/${{ github.repository_owner }}/docs target
           rm -rf target
           copy gen/proto/openapi target
           cd target
           git add .
           git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
           git push target main
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
 
       - name: Run unit tests
         env:
