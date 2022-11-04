@@ -34,7 +34,7 @@ jobs:
       - name: Update api docs
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
