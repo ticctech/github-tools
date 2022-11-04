@@ -113,6 +113,16 @@ jobs:
         with:
           go-version: ">=1.18.0"
 
+      # update api docs
+      - run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/docs target
+          rm -rf target
+          copy gen/proto/openapi target
+          cd target
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
+          git push target main
+
       - name: Run unit tests
         env:
           # use env vars to write unmasked secrets to .netrc file
