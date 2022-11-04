@@ -36,7 +36,7 @@ jobs:
         with:
           github-token: ${{ secrets.DOCS_TOKEN }}
           script: |
-            
+
             console.log(context)
             //const path = `api/${context.repo.repo}.swagger.json`
             const path = 'api/api.swagger.json'
@@ -51,6 +51,7 @@ jobs:
             } catch (e) {
               console.log('not found')
             }
+            console.log('resp', resp)
 
             github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
