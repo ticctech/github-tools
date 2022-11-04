@@ -42,7 +42,8 @@ jobs:
           cd target
           ls
           git add .
-          git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
+          git commit -m "Automatic publish from ${{ github.repository }}"
+          # git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
           git push . main
 
 
