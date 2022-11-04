@@ -36,12 +36,21 @@ jobs:
         with:
           github-token: ${{ secrets.DOCS_TOKEN }}
           script: |
+            const path = `api/${context.repo.repo}.swagger.json`
+
+            const resp = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: 'docs',
+              path: path,
+            });
+
             github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
               repo: 'docs',
-              path: `api/${context.repo.repo}.swagger.json`,
+              path: path,
               message: 'update api docs',
               content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
+              sha: resp?.sha
               committer: {
                 name: 'andrewweston',
                 email: 'andrew.weston@propellerhead.co.nz',
