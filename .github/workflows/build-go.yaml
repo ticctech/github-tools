@@ -41,11 +41,16 @@ jobs:
             //const path = `api/${context.repo.repo}.swagger.json`
             const path = 'api/api.swagger.json'
 
-            const resp = await github.rest.repos.getContent({
-              owner: context.repo.owner,
-              repo: 'docs',
-              path: path,
-            });
+            let resp
+            try {
+              resp = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: 'docs',
+                path: path,
+              });
+            } catch (e) {
+              console.log('not found')
+            }
 
             github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
