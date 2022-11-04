@@ -43,7 +43,7 @@ jobs:
           ls
           git add .
           git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
-          git push target main
+          git push . main
 
 
 
