@@ -31,7 +31,7 @@ param ghcrUser string
 param ghcrPat string
 
 @description('The name to use for the API')
-param apiName string = '${appName}s'
+param apiName string = ''
 
 @description('The API specification in openapi format')
 param apiSpec string = ''

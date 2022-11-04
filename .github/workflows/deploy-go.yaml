@@ -65,13 +65,17 @@ jobs:
               apiSpec = require('${{ inputs.api-spec }}')
               apiSpec = btoa(JSON.stringify(apiSpec))
             }
+            let apiName = '${{ github.event.repository.name }}'
+            if ('${{ inputs.api-name }}'.length > 0) {
+              apiName = '${{ inputs.api-name }}'
+            }
 
             let p = 'env=${{ steps.env.outputs.result }}'
             p += ' appName=${{ github.event.repository.name }}'
             p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' apiName=${{ inputs.api-name }}'
+            p += ' apiName=' + apiName
             p += ' apiSpec=' + apiSpec
             return p
           result-encoding: string
