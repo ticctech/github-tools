@@ -59,7 +59,7 @@ jobs:
               path: path,
               message: 'update api docs',
               content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
-              sha: resp?.sha,
+              sha: resp?.data?.sha,
               committer: {
                 name: 'andrewweston',
                 email: 'andrew.weston@propellerhead.co.nz',
