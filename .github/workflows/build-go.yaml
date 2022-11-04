@@ -41,10 +41,10 @@ jobs:
               repo: 'docs',
               path: `api/${context.repo.repo}.swagger.json`,
               message: 'update api docs',
-              content: 'bXkgbmV3IGZpbGUgY29udGVudHM='
+              content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
               committer: {
                 name: context.actor,
-                email: 'octocat@github.com'
+                email: 'octocat@github.com',
               },
             })
 
