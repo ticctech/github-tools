@@ -34,7 +34,7 @@ jobs:
       - name: Update api docs
         uses: actions/github-script@v6
         with:
-          github-token: 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
+          github-token: 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
           script: |
             github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
@@ -43,27 +43,10 @@ jobs:
               message: 'update api docs',
               content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
               committer: {
-                name: context.actor,
-                email: 'octocat@github.com',
+                name: 'andrewweston',
+                email: 'andrew.weston@propellerhead.co.nz',
               },
             })
-
-      # - name: Update api docs
-      #   run: |
-      #     git config --global user.name "andrewweston"
-      #     git config --global user.email "andrew.weston@propellerhead.co.nz"
-
-      #     git clone https://.:${{ secrets.GH_PAT }}@github.com/${{ github.repository_owner }}/docs target
-      #     # rm -rf target
-      #     cp gen/proto/openapi/docs.swagger.json target
-      #     cd target
-      #     ls
-      #     git add .
-      #     git commit -m "Automatic publish from ${{ github.repository }}"
-      #     # git diff-index --quiet HEAD || git commit -m "Automatic publish from ${{ github.repository }}"
-      #     git push . main
-
-
 
       - name: Setup buf
         uses: bufbuild/buf-setup-action@v1
