@@ -36,9 +36,10 @@ jobs:
         with:
           github-token: ${{ secrets.DOCS_TOKEN }}
           script: |
+            
             console.log(context)
             //const path = `api/${context.repo.repo}.swagger.json`
-            const path = `api/api.swagger.json`
+            const path = 'api/api.swagger.json'
 
             const resp = await github.rest.repos.getContent({
               owner: context.repo.owner,
