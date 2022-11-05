@@ -37,8 +37,6 @@ jobs:
         with:
           github-token: ${{ secrets.ACTIONS_TOKEN }}
           script: |
-            console.log(context)
-
             let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
             if (!apiSpec){
               console.log('No api spec found')
