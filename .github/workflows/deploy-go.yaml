@@ -59,26 +59,25 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            // const fs = require('fs')
-
-            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
-            if (apiSpec) {
-              apiSpec = Buffer.from(JSON.stringify(apiSpec)).toString('base64')
-            }
-            console.log(apiSpec)
-
-            let apiName = '${{ github.event.repository.name }}s'
-            if ('${{ inputs.api-name }}'.length > 0) {
-              apiName = '${{ inputs.api-name }}'
-            }
-
             let p = 'env=${{ steps.env.outputs.result }}'
             p += ' appName=${{ github.event.repository.name }}'
             p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-            p += ' apiName=' + apiName
-            p += ' apiSpec=' + apiSpec
+
+            //if ('${{ inputs.api-name }}'.length > 0) {
+            //  p += ' apiName=' + '${{ inputs.api-name }}' || '${{ github.event.repository.name }}s'
+            //} else {
+            //  p += ' apiName=' + '${{ github.event.repository.name }}s'
+            //}
+
+            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+            console.log(apiSpec)
+            if (apiSpec) {
+              p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
+              p += ' apiName=' + '${{ inputs.api-name }}' || '${{ github.event.repository.name }}s'
+            }
+
             return p
           result-encoding: string
 
