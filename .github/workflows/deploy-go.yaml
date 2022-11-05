@@ -65,14 +65,7 @@ jobs:
             p += ' ghcrUser=${{ secrets.GHCR_USER }}'
             p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
 
-            //if ('${{ inputs.api-name }}'.length > 0) {
-            //  p += ' apiName=' + '${{ inputs.api-name }}' || '${{ github.event.repository.name }}s'
-            //} else {
-            //  p += ' apiName=' + '${{ github.event.repository.name }}s'
-            //}
-
             let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
-            console.log(apiSpec)
             if (apiSpec) {
               p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
               p += ' apiName=' + '${{ inputs.api-name }}' || '${{ github.event.repository.name }}s'
