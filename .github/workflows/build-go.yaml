@@ -42,7 +42,7 @@ jobs:
             let resp
             try {
               // resp = await github.rest.repos.getContent({
-              resp = await github.rest.request("GET /repos/{owner}/{repo}/contents/{path}", {
+              resp = await github.request("GET /repos/{owner}/{repo}/contents/{path}", {
                 owner: context.repo.owner,
                 repo: 'docs',
                 path: path,
@@ -52,7 +52,7 @@ jobs:
             }
 
             // github.rest.repos.createOrUpdateFileContents({
-            github.rest.request("PUT /repos/{owner}/{repo}/contents/{path}", {
+            github.request("PUT /repos/{owner}/{repo}/contents/{path}", {
               owner: context.repo.owner,
               repo: 'docs',
               path: path,
