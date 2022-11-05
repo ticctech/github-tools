@@ -36,23 +36,23 @@ jobs:
         with:
           github-token: ${{ secrets.DOCS_TOKEN }}
           script: |
-
             //console.log(context)
             const path = `api/${context.repo.repo}.swagger.json`
 
             let resp
             try {
-              resp = await github.rest.repos.getContent({
+              // resp = await github.rest.repos.getContent({
+              resp = await github.rest.request("GET /repos/{owner}/{repo}/contents/{path}", {
                 owner: context.repo.owner,
                 repo: 'docs',
                 path: path,
               });
             } catch (e) {
-              console.log('not found')
+              console.log(e)
             }
-            //console.log('resp', resp)
 
-            github.rest.repos.createOrUpdateFileContents({
+            // github.rest.repos.createOrUpdateFileContents({
+            github.rest.request("PUT /repos/{owner}/{repo}/contents/{path}", {
               owner: context.repo.owner,
               repo: 'docs',
               path: path,
