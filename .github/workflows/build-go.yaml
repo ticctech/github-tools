@@ -31,6 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # copy swagger doc to docs repo
       - name: Update api docs
         uses: actions/github-script@v6
         with:
@@ -63,8 +64,8 @@ jobs:
               content: Buffer.from(JSON.stringify(apiSpec)).toString('base64'),
               sha: existing?.data?.sha,
               committer: {
-                name: 'andrewweston',
-                email: 'andrew.weston@propellerhead.co.nz',
+                name: context.payload.pusher.name,
+                email: context.payload.pusher.email,
               },
             })
 
@@ -73,7 +74,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Latest tag
+      # most recent release
+      - name: Latest release
         id: prev-tag
         uses: actions/github-script@v6
         with:
@@ -85,6 +87,7 @@ jobs:
             return resp.data.tag_name
           result-encoding: string
 
+      # check for breaking changes in protos
       - name: Fail when breaking proto change
         uses: bufbuild/buf-breaking-action@v1
         if: |
@@ -94,6 +97,7 @@ jobs:
           against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
           buf_token: ${{ secrets.BUF_PAT }}
 
+      #  lint proto files
       - name: Lint protos
         uses: bufbuild/buf-lint-action@v1
         with:
@@ -107,8 +111,8 @@ jobs:
           input: proto
           buf_token: ${{ secrets.BUF_PAT }}
 
+      # increment repo version tag
       - run: npm install semver json-diff
-
       - name: Increment version
         id: curr-tag
         uses: actions/github-script@v6
@@ -150,6 +154,7 @@ jobs:
         with:
           go-version: ">=1.18.0"
 
+      # unit tests
       - name: Run unit tests
         env:
           # use env vars to write unmasked secrets to .netrc file
@@ -164,6 +169,7 @@ jobs:
           go mod download
           go test -v ./...
 
+      # log in to GitHub packages (ghcr.io)
       - name: Log in to GitHub container registry
         uses: docker/login-action@v2
         with:
@@ -171,6 +177,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # build docker image and push to ghcr.io
       - name: Build and push image
         uses: docker/build-push-action@v3
         with:
