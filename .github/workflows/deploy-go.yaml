@@ -15,8 +15,7 @@ on:
         type: string
       api-name:
         type: string
-      api-spec:
-        type: string
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -60,12 +59,15 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let apiSpec = ''
-            if ('${{ inputs.api-spec }}'.length > 0) {
-              apiSpec = require('${{ inputs.api-spec }}')
-              apiSpec = btoa(JSON.stringify(apiSpec))
+            // const fs = require('fs')
+
+            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+            if (apiSpec) {
+              apiSpec = Buffer.from(JSON.stringify(apiSpec)).toString('base64')
             }
-            let apiName = '${{ github.event.repository.name }}'
+            console.log(apiSpec)
+
+            let apiName = '${{ github.event.repository.name }}s'
             if ('${{ inputs.api-name }}'.length > 0) {
               apiName = '${{ inputs.api-name }}'
             }

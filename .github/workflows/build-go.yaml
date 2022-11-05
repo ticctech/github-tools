@@ -36,7 +36,7 @@ jobs:
         with:
           github-token: ${{ secrets.DOCS_TOKEN }}
           script: |
-            //console.log(context)
+            console.log(context)
             const path = `api/${context.repo.repo}.swagger.json`
 
             let resp
@@ -48,8 +48,11 @@ jobs:
                 path: path,
               });
             } catch (e) {
-              console.log(e)
+            //  console.log(e)
             }
+
+            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+            apiSpec = Buffer.from(JSON.stringify(apiSpec)).toString('base64')
 
             // github.rest.repos.createOrUpdateFileContents({
             github.request("PUT /repos/{owner}/{repo}/contents/{path}", {
@@ -57,7 +60,7 @@ jobs:
               repo: 'docs',
               path: path,
               message: 'update api docs',
-              content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
+              content: apiSpec,
               sha: resp?.data?.sha,
               committer: {
                 name: 'andrewweston',
