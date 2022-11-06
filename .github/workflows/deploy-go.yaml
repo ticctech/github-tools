@@ -53,31 +53,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      # simplify manage bicep parameter management
-      - name: Set params
-        id: params
-        uses: actions/github-script@v6
-        with:
-          script: |
-            let p = 'env=${{ steps.env.outputs.result }}'
-            p += ' appName=${{ github.event.repository.name }}'
-            p += ' imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}'
-            p += ' ghcrUser=${{ secrets.GHCR_USER }}'
-            p += ' ghcrPat=${{ secrets.GHCR_PAT }}'
-
-            let apiName = '${{ inputs.api-name }}'
-            if (apiName === '') {
-              apiName = '${{ github.event.repository.name }}s'
-            }
-            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
-            if (apiSpec) {
-              p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
-              p += ' apiName=' + apiName
-            }
-
-            return p
-          result-encoding: string
-
       - name: Azure login
         uses: azure/login@v1
         with:
@@ -97,11 +72,54 @@ jobs:
       #     failOnStdErr: false
 
       # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
-      - name: Deploy bicep
+      - name: Deploy Container App
+        run: |
+          echo ca_response=$(az deployment group create \
+            --name "${{ github.event.repository.name }}" \
+            --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/1.0" \
+            --parameters "env=${{ steps.env.outputs.result }}" \
+            --parameters "appName=${{ github.event.repository.name }}" \
+            --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
+            --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
+            --parameters "ghcrUser=${{ secrets.GHCR_PAT }}" \
+            --query "{containerAppFqdn: properties.outputs.containerAppFqdn.value, containerAppId:properties.outputs.containerAppId.value}") >> $GITHUB_ENV
+
+
+      # get API params
+      - name: Set API params
+        id: api-params
+        uses: actions/github-script@v6
+        with:
+          script: |
+            echo ${{ env.ca_response }}
+            
+            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+            if (!apiSpec) {
+              return ''
+            }
+            let apiName = '${{ inputs.api-name }}'
+            if (apiName === '') {
+              apiName = '${{ github.event.repository.name }}s'
+            }
+
+            let p = 'apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
+            p += ' apiName=' + apiName
+            p += ' containerAppId=${{ env.containerAppId}}'
+            p += ' containerAppFqdn=${{ env.containerAppFqdn }}'
+            return p
+          result-encoding: string
+
+      # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
+      - name: Deploy Container App API
+        if: steps.api-params.outputs.result != ''
         run: |
           az deployment group create \
             --name ${{ github.event.repository.name }} \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-containerapp/versions/1.0" \
-            --parameters ${{ steps.params.outputs.result }}
+            --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
+            --parameters "env=${{ steps.env.outputs.result }}" \
+            --parameters "appName=${{ github.event.repository.name }}" \
+            --parameters ${{ steps.api-params.outputs.result }}
