@@ -92,8 +92,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ env.ca_output }}')
-
             let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
             if (!apiSpec) {
               return ''
