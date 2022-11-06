@@ -83,7 +83,7 @@ jobs:
             --parameters "appName=${{ github.event.repository.name }}" \
             --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
             --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
-            --parameters "ghcrUser=${{ secrets.GHCR_PAT }}" \
+            --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
             --query "{containerAppFqdn: properties.outputs.containerAppFqdn.value, containerAppId:properties.outputs.containerAppId.value}") >> $GITHUB_ENV
 
 
@@ -93,8 +93,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            echo ${{ env.ca_response }}
-            
+            console.log('${{ env.ca_response }}')'
+
             let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
             if (!apiSpec) {
               return ''
