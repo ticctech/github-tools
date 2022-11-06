@@ -215,3 +215,6 @@ resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' =
     }
   }
 }
+
+output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
+output containerAppId string = containerApp.id
