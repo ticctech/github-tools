@@ -86,7 +86,6 @@ jobs:
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
             --query "{containerAppFqdn: properties.outputs.containerAppFqdn.value, containerAppId:properties.outputs.containerAppId.value}") >> $GITHUB_ENV
 
-
       # get API params
       - name: Set API params
         id: api-params
@@ -103,15 +102,15 @@ jobs:
             if (apiName === '') {
               apiName = '${{ github.event.repository.name }}s'
             }
+            const outputs = JSON.parse('${{ env.ca_output }}')
 
             let p = 'apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
             p += ' apiName=' + apiName
-            p += ' containerAppId=${{ env.ca_output.containerAppId}}'
-            p += ' containerAppFqdn=${{ env.ca_output.containerAppFqdn }}'
+            p += ' containerAppId=' + outputs.containerAppId
+            p += ' containerAppFqdn=' + outputs.containerAppFqdn
             return p
           result-encoding: string
 
-      # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
       - name: Deploy Container App API
         if: steps.api-params.outputs.result != ''
         run: |
