@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
-      id-token: write
       contents: read
+      id-token: write
 
     steps:
       - name: Set env
