@@ -91,10 +91,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
-            if (!apiSpec) {
+            let apiSpec
+            try {
+              apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+            } catch (e) {
+              console.log('No api spec found')
               return ''
             }
+
             let apiName = '${{ inputs.api-name }}'
             if (apiName === '') {
               apiName = '${{ github.event.repository.name }}s'
