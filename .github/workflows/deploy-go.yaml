@@ -84,7 +84,7 @@ jobs:
             --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
             --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
-            --query properties.outputs" >> $GITHUB_ENV
+            --query properties.outputs") >> $GITHUB_ENV
 
       - name: Set API params
         id: api-params
