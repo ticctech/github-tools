@@ -29,7 +29,6 @@ jobs:
         id: env
         uses: actions/github-script@v6
         with:
-          result-encoding: string
           script: |
             switch('${{ inputs.environment }}') {
               case 'staging':
@@ -39,6 +38,7 @@ jobs:
               default:
                 return "dev"
             }
+          result-encoding: string
 
       - run: npm install semver
 
@@ -46,10 +46,10 @@ jobs:
         id: version
         uses: actions/github-script@v6
         with:
-          result-encoding: string
           script: |
             const semver = require('semver')
             return `v${semver.major('${{ inputs.tag }}')}`
+          result-encoding: string
 
       - uses: actions/checkout@v3
 
@@ -84,7 +84,7 @@ jobs:
             --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
             --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
-            --query properties.outputs") >> $GITHUB_ENV
+            --query properties.outputs) >> $GITHUB_ENV
 
       - name: Set API params
         id: api-params
