@@ -147,12 +147,12 @@ jobs:
             return `v${semver.inc(latestTag, await increment())}`
           result-encoding: string
 
+      # unit tests
       - name: Install Go
         uses: actions/setup-go@v3
         with:
           go-version: ">=1.18.0"
 
-      # unit tests
       - name: Run unit tests
         env:
           # use env vars to write unmasked secrets to .netrc file
@@ -196,7 +196,7 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ steps.curr-tag.outputs.result }}
             ghcr.io/${{ github.repository }}:latest
 
-      # Create release (incl. underlying tag)
+      # create release (incl. underlying tag)
       - name: Create release
         uses: actions/github-script@v6
         with:
