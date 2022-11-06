@@ -74,7 +74,7 @@ jobs:
       # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
       - name: Deploy Container App
         run: |
-          echo ca_response=$(az deployment group create \
+          echo ca_output=$(az deployment group create \
             --name "${{ github.event.repository.name }}" \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
@@ -93,7 +93,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ env.ca_response }}')'
+            console.log('${{ ca_output }}')
 
             let apiSpec = require('./gen/proto/openapi/docs.swagger.json')
             if (!apiSpec) {
@@ -106,8 +106,8 @@ jobs:
 
             let p = 'apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
             p += ' apiName=' + apiName
-            p += ' containerAppId=${{ env.containerAppId}}'
-            p += ' containerAppFqdn=${{ env.containerAppFqdn }}'
+            p += ' containerAppId=${{ env.ca_output.containerAppId}}'
+            p += ' containerAppFqdn=${{ env.ca_output.containerAppFqdn }}'
             return p
           result-encoding: string
 
