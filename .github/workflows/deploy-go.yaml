@@ -74,7 +74,7 @@ jobs:
       # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
       - name: Deploy Container App
         run: |
-          echo ca_output=$(az deployment group create \
+          echo ca_outputs=$(az deployment group create \
             --name "${{ github.event.repository.name }}" \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
@@ -84,7 +84,7 @@ jobs:
             --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
             --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
-            --query "{containerAppFqdn: properties.outputs.containerAppFqdn.value, containerAppId:properties.outputs.containerAppId.value}") >> $GITHUB_ENV
+            --query properties.outputs" >> $GITHUB_ENV
 
       - name: Set API params
         id: api-params
@@ -99,12 +99,12 @@ jobs:
             if (apiName === '') {
               apiName = '${{ github.event.repository.name }}s'
             }
-            const outputs = JSON.parse('${{ env.ca_output }}')
+            const outputs = JSON.parse('${{ env.ca_outputs }}')
 
             let p = 'apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
             p += ' apiName=' + apiName
-            p += ' containerAppId=' + outputs.containerAppId
-            p += ' containerAppFqdn=' + outputs.containerAppFqdn
+            p += ' containerAppId=' + outputs.containerAppId.value
+            p += ' containerAppFqdn=' + outputs.containerAppFqdn.value
             return p
           result-encoding: string
 
