@@ -30,12 +30,6 @@ param ghcrUser string
 @description('GitHub container registry personal access token')
 param ghcrPat string
 
-// @description('The name to use for the API')
-// param apiName string = ''
-
-// @description('The API specification in openapi format')
-// param apiSpec string = ''
-
 // get a reference to the container apps environment
 resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
   name: 'cae-ticc-${env}'
@@ -141,80 +135,6 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
     }
   }
 }
-
-// // -----------------------------
-// // Deploy Container App API
-// // -----------------------------
-// // var apiName = '${appName}s'
-// var apiEnabled = length(apiSpec) > 0
-
-// // get reference to API manager
-// resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = if (apiEnabled) {
-//   name: 'apim-ticc-${env}'
-// }
-
-// // update API from swagger
-// resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiEnabled) {
-//   name: apiName
-//   parent: apiManager
-//   properties: {
-//     displayName: apiName
-//     apiRevision: '1'
-//     // apiVersion: 'string'
-//     isCurrent: true
-//     path: '/${apiName}'
-//     type: 'http'
-//     protocols: [
-//       'https'
-//     ]
-//     subscriptionRequired: false
-//     format: 'swagger-json'
-//     value: base64ToJson(apiSpec)
-//   }
-// }
-
-// var apiPolicies = format('''
-//   <policies>
-//     <inbound>
-//       <base />
-//       <set-backend-service backend-id="{0}" />
-//     </inbound>
-//     <backend>
-//       <base />
-//     </backend>
-//     <outbound>
-//       <base />
-//     </outbound>
-//     <on-error>
-//       <base />
-//     </on-error>
-//   </policies>
-// ''', appName)
-
-// // set policies
-// resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = if (apiEnabled) {
-//   name: 'policy'
-//   parent: api
-//   properties: {
-//     format: 'xml'
-//     value: apiPolicies
-//   }
-// }
-
-// // create backend for service
-// resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = if (apiEnabled) {
-//   name: appName
-//   parent: apiManager
-//   properties: {
-//     url: 'https://${containerApp.properties.configuration.ingress.fqdn}'
-//     protocol: 'http'
-//     resourceId: '${environment().resourceManager}/${containerApp.id}'
-//     tls: {
-//       validateCertificateChain: true
-//       validateCertificateName: true
-//     }
-//   }
-// }
 
 output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
 output containerAppId string = containerApp.id
