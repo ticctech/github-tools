@@ -86,7 +86,6 @@ jobs:
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
             --query "{containerAppFqdn: properties.outputs.containerAppFqdn.value, containerAppId:properties.outputs.containerAppId.value}") >> $GITHUB_ENV
 
-      # get API params
       - name: Set API params
         id: api-params
         uses: actions/github-script@v6
