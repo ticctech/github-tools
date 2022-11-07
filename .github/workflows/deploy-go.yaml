@@ -15,11 +15,16 @@ on:
         type: string
       api-name:
         type: string
+      dapr-app-protocol:
+        type: string
+        required: true
+        default: 'grpc'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+
     permissions:
       contents: read
       id-token: write
@@ -84,6 +89,7 @@ jobs:
             --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ inputs.tag }}" \
             --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
+            --parameters "daprAppProtocol=${{ inputs.dapr-app-protocol }}" \
             --query properties.outputs) >> $GITHUB_ENV
 
       - name: Set API params

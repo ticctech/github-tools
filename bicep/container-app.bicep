@@ -22,6 +22,9 @@ param imageTag string
 @description('Container App target port')
 param targetPort int = 8080
 
+@description('dapr app protocol')
+param daprAppProtocol string
+
 @secure()
 @description('GitHub container registry user')
 param ghcrUser string
@@ -59,7 +62,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
       dapr: {
         appId: appName
         appPort: 8080
-        appProtocol: 'grpc'
+        appProtocol: daprAppProtocol
         enabled: true
       }
       ingress: {
