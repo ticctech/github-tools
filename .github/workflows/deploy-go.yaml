@@ -17,7 +17,6 @@ on:
         type: string
       dapr-app-protocol:
         type: string
-        required: true
         default: 'grpc'
 
 jobs:
