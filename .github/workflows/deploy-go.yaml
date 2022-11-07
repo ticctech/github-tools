@@ -15,6 +15,8 @@ on:
         type: string
       api-name:
         type: string
+      api-spec:
+        type: string
       dapr-app-protocol:
         type: string
         default: 'grpc'
@@ -96,9 +98,13 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            let specFile = '${{ inputs.api-spec }}'
+            if (specFile === '') {
+              specFile = './gen/proto/openapi/docs.swagger.json'
+            }
             let apiSpec
             try {
-              apiSpec = require('./gen/proto/openapi/docs.swagger.json')
+              apiSpec = require(specFile)
             } catch (e) {
               console.log('No api spec found')
               return ''
