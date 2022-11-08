@@ -87,19 +87,11 @@ jobs:
             return resp.data.tag_name
           result-encoding: string
 
-      - name: temp output
-        run: echo "tag ${{ steps.prev-tag.outputs.result }}, message ${{ github.event.head_commit.message }}"
-
-      - name: temp condition
-        run: |
-          echo contains(${{ steps.prev-tag.outputs.result }}, 'alpha')
-          echo contains(${{ github.event.head_commit.message }}, '[breaking]')
-
       # check for breaking changes in protos
       - name: Fail when breaking proto change
         if: |
-          !(contains(${{ steps.prev-tag.outputs.result }}, 'alpha') ||
-          contains(${{ github.event.head_commit.message }}, '[breaking]'))
+          !(contains(steps.prev-tag.outputs.result, 'alpha') ||
+          contains(github.event.head_commit.message, '[breaking]'))
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
