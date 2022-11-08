@@ -92,8 +92,8 @@ jobs:
 
       - name: temp condition
         run: |
-          echo { contains(${{ steps.prev-tag.outputs.result }}, 'alpha') }
-          echo { contains(${{ github.event.head_commit.message }}, '[breaking]') }
+          echo contains(${{ steps.prev-tag.outputs.result }}, 'alpha')
+          echo contains(${{ github.event.head_commit.message }}, '[breaking]')
 
       # check for breaking changes in protos
       - name: Fail when breaking proto change
