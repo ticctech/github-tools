@@ -95,45 +95,45 @@ jobs:
             --parameters "daprAppProtocol=${{ inputs.dapr-app-protocol }}" \
             --query properties.outputs) >> $GITHUB_ENV
 
-      - name: Set API params
-        id: api-params
-        uses: actions/github-script@v6
-        with:
-          script: |
-            let specFile = '${{ inputs.api-spec }}'
-            # if (specFile === '') {
-            #   specFile = './gen/proto/openapi/docs.swagger.json'
-            # }
-            let apiSpec = ''
-            if (specFile !== '') {
-              try {
-                apiSpec = require(specFile)
-              } catch (e) {
-                console.log('No api spec found')
-                return ''
-              }
-            }
+      # - name: Set API params
+      #   id: api-params
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       let specFile = '${{ inputs.api-spec }}'
+      #       # if (specFile === '') {
+      #       #   specFile = './gen/proto/openapi/docs.swagger.json'
+      #       # }
+      #       let apiSpec = ''
+      #       if (specFile !== '') {
+      #         try {
+      #           apiSpec = require(specFile)
+      #         } catch (e) {
+      #           console.log('No api spec found')
+      #           return ''
+      #         }
+      #       }
 
-            let apiName = '${{ inputs.api-name }}'
-            if (apiName === '') {
-              apiName = '${{ github.event.repository.name }}s'
-            }
-            const outputs = JSON.parse('${{ env.ca_outputs }}')
+      #       let apiName = '${{ inputs.api-name }}'
+      #       if (apiName === '') {
+      #         apiName = '${{ github.event.repository.name }}s'
+      #       }
+      #       const outputs = JSON.parse('${{ env.ca_outputs }}')
 
-            let apiPath = '${{ inputs.api-path }}'
-            if (apiPath === '') {
-              apiPath = apiName
-            }
+      #       let apiPath = '${{ inputs.api-path }}'
+      #       if (apiPath === '') {
+      #         apiPath = apiName
+      #       }
 
-            let p = 'path=' + '${{ inputs.api-path }}'
-            p += ' apiName=' + apiName
-            p += ' containerAppId=' + outputs.containerAppId.value
-            p += ' containerAppFqdn=' + outputs.containerAppFqdn.value
-            if (apiSpec !== '') {
-              p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
-            }
-            return p
-          result-encoding: string
+      #       let p = 'path=' + '${{ inputs.api-path }}'
+      #       p += ' apiName=' + apiName
+      #       p += ' containerAppId=' + outputs.containerAppId.value
+      #       p += ' containerAppFqdn=' + outputs.containerAppFqdn.value
+      #       if (apiSpec !== '') {
+      #         p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
+      #       }
+      #       return p
+      #     result-encoding: string
 
       # - name: Deploy Container App API
       #   if: steps.api-params.outputs.result != ''
