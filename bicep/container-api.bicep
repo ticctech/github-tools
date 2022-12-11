@@ -19,6 +19,9 @@ param apiName string
 @description('The API specification in openapi format')
 param apiSpec string
 
+@description('The base path for the API')
+param path string
+
 @description('Container App ID')
 param containerAppId string
 
@@ -30,7 +33,7 @@ resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = {
   name: 'apim-ticc-${env}'
 }
 
-// update API from swagger
+// endpoint specification
 resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
   name: apiName
   parent: apiManager
@@ -39,7 +42,7 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
     apiRevision: '1'
     // apiVersion: 'string'
     isCurrent: true
-    path: '/${apiName}'
+    path: '/${path}'
     type: 'http'
     protocols: [
       'https'
