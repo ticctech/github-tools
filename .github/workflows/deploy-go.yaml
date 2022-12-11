@@ -21,7 +21,7 @@ on:
         type: string
       dapr-app-protocol:
         type: string
-        default: 'grpc'
+        default: 'http'
 
 jobs:
   deploy:
