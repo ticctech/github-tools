@@ -19,9 +19,6 @@ param apiName string
 @description('The API specification in openapi format')
 param apiSpec string
 
-@description('The base path for the API')
-param path string
-
 @description('Container App ID')
 param containerAppId string
 
@@ -42,7 +39,7 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
     apiRevision: '1'
     // apiVersion: 'string'
     isCurrent: true
-    path: '/${path}'
+    path: '/'
     type: 'http'
     protocols: [
       'https'
