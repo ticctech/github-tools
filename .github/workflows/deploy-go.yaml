@@ -114,7 +114,9 @@ jobs:
 
             let apiName = '${{ inputs.api-name }}'
             if (apiName === '') {
-              apiName = '${{ github.event.repository.name }}s'
+              let repoName = '${{ github.event.repository.name }}'
+              const svcName = repoName.charAt(0).toUpperCase() + repoName.slice(1)
+              apiName = `${repoName}.v1.${svcName}Service`
             }
             const outputs = JSON.parse('${{ env.ca_outputs }}')
 
