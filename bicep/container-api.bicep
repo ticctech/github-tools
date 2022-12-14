@@ -16,6 +16,9 @@ param appName string
 @description('The name to use for the API')
 param apiName string
 
+@description('The base path to use for resources associated with this API')
+param path string = '/'
+
 @description('The API specification in openapi format')
 param apiSpec string
 
@@ -37,9 +40,10 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
   properties: {
     displayName: apiName
     apiRevision: '1'
+
     // apiVersion: 'string'
     isCurrent: true
-    path: '/'
+    path: path
     type: 'http'
     protocols: [
       'https'
