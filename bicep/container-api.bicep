@@ -13,9 +13,6 @@ param env string
 @description('Container App HTTP port')
 param appName string
 
-@description('The name to use for the API')
-param apiName string
-
 @description('The base path to use for resources associated with this API')
 param path string = '/'
 
@@ -35,10 +32,10 @@ resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = {
 
 // endpoint specification
 resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
-  name: apiName
+  name: appName
   parent: apiManager
   properties: {
-    displayName: apiName
+    displayName: appName
     apiRevision: '1'
 
     // apiVersion: 'string'
