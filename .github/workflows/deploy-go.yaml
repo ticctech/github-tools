@@ -110,15 +110,15 @@ jobs:
               return ''
             }
 
-            let apiPath = '${{ inputs.api-path }}'
-            if (apiPath === '') {
+            let basePath = '${{ inputs.api-path }}'
+            if (basePath === '') {
               let repoName = '${{ github.event.repository.name }}'
               const svcName = repoName.charAt(0).toUpperCase() + repoName.slice(1)
-              apiPath = `${repoName}.v1.${svcName}Service`
+              basePath = `${repoName}.v1.${svcName}Service`
             }
             const outputs = JSON.parse('${{ env.ca_outputs }}')
 
-            let p = `apiPath=${apiPath}`
+            let p = `basePath=${basePath}`
             p += ` containerAppId=${outputs.containerAppId.value}`
             p += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if (apiSpec !== '') {
