@@ -118,7 +118,7 @@ jobs:
             }
             const outputs = JSON.parse('${{ env.ca_outputs }}')
 
-            let p = `apiPath=${apiPath} `
+            let p = `apiPath=${apiPath}`
             p += ` containerAppId=${outputs.containerAppId.value}`
             p += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if (apiSpec !== '') {
