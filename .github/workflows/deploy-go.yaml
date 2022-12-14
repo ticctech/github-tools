@@ -118,11 +118,11 @@ jobs:
             }
             const outputs = JSON.parse('${{ env.ca_outputs }}')
 
-            let p = 'apiPath=' + apiPath
-            p += ' containerAppId=' + outputs.containerAppId.value
-            p += ' containerAppFqdn=' + outputs.containerAppFqdn.value
+            let p = `apiPath=${apiPath} `
+            p += ` containerAppId=${outputs.containerAppId.value}`
+            p += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if (apiSpec !== '') {
-              p += ' apiSpec=' + Buffer.from(JSON.stringify(apiSpec)).toString('base64')
+              p += ` apiSpec=${Buffer.from(JSON.stringify(apiSpec)).toString('base64')}`
             }
             return p
           result-encoding: string
