@@ -20,7 +20,7 @@ param backendName string
 param basePath string = '/'
 
 @description('The API specification in openapi format')
-param apiSpec string
+param apiSpec string = ''
 
 @description('Container App ID')
 param containerAppId string
@@ -34,7 +34,7 @@ resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = {
 }
 
 // endpoint specification
-resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiName != '') {
+resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiSpec != '') {
   name: apiName
   parent: apiManager
   properties: {

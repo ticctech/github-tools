@@ -64,17 +64,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # - name: Deploy Container App
-      #   uses: azure/arm-deploy@v1
-      #   with:
-      #     deploymentName: ${{ github.event.repository.name }}
-      #     scope: resourcegroup
-      #     subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      #     resourceGroupName: app-ticc-${{ steps.env.outputs.result }}-ae-rg
-      #     template: ./.github/workflows/main.bicep
-      #     parameters: ./.github/workflows/params.json ${{ steps.params.outputs.result }}
-      #     failOnStdErr: false
-
       # HACK: use az cli to deploy bicep until azure/arm-deploy supports --template-spec
       - name: Deploy Container App
         run: |
@@ -95,15 +84,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const specFile = '${{ inputs.api-spec }}' || './internal/gen/docs.swagger.json'
-            let apiSpec = ''
-            try {
-              apiSpec = require(specFile)
-            } catch (e) {}
-
             const backend = '${{ inputs.api-backend }}' || '${{ github.event.repository.name }}'
             // const basePath = '${{ inputs.api-path }}'
             const outputs = JSON.parse('${{ env.ca_outputs }}')
+            const specFile = '${{ inputs.api-spec }}'
+            let apiSpec = ''
+            if (specFile !== '') {
+              apiSpec = require(specFile)
+            }
 
             let p = `backendName=${backend}`
             p += ` containerAppId=${outputs.containerAppId.value}`
