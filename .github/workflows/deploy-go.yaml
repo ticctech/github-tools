@@ -96,29 +96,15 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let specFile = '${{ inputs.api-spec }}'
-            if (specFile === '') {
-              specFile = './internal/gen/docs.swagger.json'
-            }
+            const specFile = '${{ inputs.api-spec }}' || './internal/gen/docs.swagger.json'
             let apiSpec = ''
             try {
               apiSpec = require(specFile)
-            } catch (e) {
-              return ''
-            }
+            } catch (e) {}
 
-            //let basePath = '${{ inputs.api-path }}';
-            //if (basePath === '') {
-            //  let repoName = '${{ github.event.repository.name }}';
-            //  const svcName = repoName.charAt(0).toUpperCase() + repoName.slice(1);
-            //  basePath = `${repoName}.v1.${svcName}Service`;
-            //}
+            const backend = '${{ inputs.api-backend }}' || '${{ github.event.repository.name }}'
+            // const basePath = '${{ inputs.api-path }}'
             const outputs = JSON.parse('${{ env.ca_outputs }}')
-
-            let backend = '${{ inputs.api-backend }}'
-            if (backend === '') {
-              backend = '${{ github.event.repository.name }}'
-            }
 
             let p = `backendName=${backend}`
             p += ` containerAppId=${outputs.containerAppId.value}`
