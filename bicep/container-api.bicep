@@ -10,8 +10,11 @@
 @description('Environment short name')
 param env string
 
+@description('Name of the API name')
+param apiName string
+
 @description('Container App HTTP port')
-param appName string
+param backendName string
 
 @description('The base path to use for resources associated with this API')
 param basePath string = '/'
@@ -31,11 +34,11 @@ resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = {
 }
 
 // endpoint specification
-resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
-  name: appName
+resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiName != '') {
+  name: apiName
   parent: apiManager
   properties: {
-    displayName: appName
+    displayName: apiName
     apiRevision: '1'
 
     // apiVersion: 'string'
@@ -51,37 +54,9 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = {
   }
 }
 
-var apiPolicies = format('''
-  <policies>
-    <inbound>
-      <base />
-      <set-backend-service backend-id="{0}" />
-    </inbound>
-    <backend>
-      <base />
-    </backend>
-    <outbound>
-      <base />
-    </outbound>
-    <on-error>
-      <base />
-    </on-error>
-  </policies>
-''', appName)
-
-// set policies
-resource policies 'Microsoft.ApiManagement/service/apis/policies@2021-08-01' = {
-  name: 'policy'
-  parent: api
-  properties: {
-    format: 'xml'
-    value: apiPolicies
-  }
-}
-
 // create backend for service
-resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = {
-  name: appName
+resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' =  {
+  name: backendName
   parent: apiManager
   properties: {
     url: 'https://${containerAppFqdn}'

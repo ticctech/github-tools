@@ -13,13 +13,11 @@ on:
       tag:
         required: true
         type: string
+      services:
+        type: string
+        description: Comma separated list of services to create backends forfdr
       api-spec:
         type: string
-      api-path:
-        type: string
-      dapr-app-protocol:
-        type: string
-        default: "http"
 
 jobs:
   deploy:
@@ -106,19 +104,23 @@ jobs:
             try {
               apiSpec = require(specFile)
             } catch (e) {
-              console.log('No api spec found')
               return ''
             }
 
-            let basePath = '${{ inputs.api-path }}'
-            if (basePath === '') {
-              let repoName = '${{ github.event.repository.name }}'
-              const svcName = repoName.charAt(0).toUpperCase() + repoName.slice(1)
-              basePath = `${repoName}.v1.${svcName}Service`
-            }
+            //let basePath = '${{ inputs.api-path }}';
+            //if (basePath === '') {
+            //  let repoName = '${{ github.event.repository.name }}';
+            //  const svcName = repoName.charAt(0).toUpperCase() + repoName.slice(1);
+            //  basePath = `${repoName}.v1.${svcName}Service`;
+            //}
             const outputs = JSON.parse('${{ env.ca_outputs }}')
 
-            let p = `basePath=${basePath}`
+            let backend = '${{ inputs.services }}'
+            if (backend === '') {
+              backend = '${{ github.event.repository.name }}'
+            }
+
+            let p = `backendName=${backend}`
             p += ` containerAppId=${outputs.containerAppId.value}`
             p += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if (apiSpec !== '') {
@@ -136,5 +138,5 @@ jobs:
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
             --parameters "env=${{ steps.env.outputs.result }}" \
-            --parameters "appName=${{ github.event.repository.name }}" \
+            --parameters "apiName=${{ github.event.repository.name }}" \
             --parameters ${{ steps.api-params.outputs.result }}
