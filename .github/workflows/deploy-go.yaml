@@ -84,7 +84,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const backend = '${{ inputs.api-backend }}' || '${{ github.event.repository.name }}'
+            let backend = '${{ inputs.api-backend }}' 
+            if (backend === '') {
+              backend = '${{ github.event.repository.name }}'
+             }
             // const basePath = '${{ inputs.api-path }}'
             const outputs = JSON.parse('${{ env.ca_outputs }}')
             const specFile = '${{ inputs.api-spec }}'
