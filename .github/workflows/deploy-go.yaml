@@ -13,9 +13,9 @@ on:
       tag:
         required: true
         type: string
-      api-backend:
+      api-backends:
         type: string
-        description: Comma separated list of services to create backends forfdr
+        description: Comma separated list of API backends to create
       api-spec:
         type: string
 
