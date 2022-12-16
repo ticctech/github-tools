@@ -84,10 +84,11 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let backend = '${{ inputs.api-backend }}' 
-            if (backend === '') {
-              backend = '${{ github.event.repository.name }}'
-             }
+            let backends = '${{ inputs.api-backends }}' 
+            if (backends === '') {
+              backends = '${{ github.event.repository.name }}'
+            }
+
             // const basePath = '${{ inputs.api-path }}'
             const outputs = JSON.parse('${{ env.ca_outputs }}')
             const specFile = '${{ inputs.api-spec }}'
@@ -96,7 +97,7 @@ jobs:
               apiSpec = require(specFile)
             }
 
-            let p = `backendName=${backend}`
+            let p = `backendNames=${backends}`
             p += ` containerAppId=${outputs.containerAppId.value}`
             p += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if (apiSpec !== '') {

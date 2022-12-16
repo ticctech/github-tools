@@ -14,7 +14,7 @@ param env string
 param apiName string
 
 @description('Container App HTTP port')
-param backendName string
+param backendNames string
 
 @description('The base path to use for resources associated with this API')
 param basePath string = '/'
@@ -55,8 +55,8 @@ resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiSpec != 
 }
 
 // create backend for service
-resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' =  {
-  name: backendName
+resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' = [for b in split(backendNames, ','): {
+  name: b
   parent: apiManager
   properties: {
     url: 'https://${containerAppFqdn}'
@@ -67,4 +67,4 @@ resource backend 'Microsoft.ApiManagement/service/backends@2021-12-01-preview' =
       validateCertificateName: true
     }
   }
-}
+}]
