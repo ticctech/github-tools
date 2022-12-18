@@ -7,12 +7,16 @@ az ts create \
   --template-file "./bicep/container-app.bicep"
 
 az ts create \
-  --name ts-container-api \
+  --name ts-api-backend \
   --version "1.0" \
   --resource-group "app-ticc-stg-ae-rg" \
   --location "australiaeast" \
-  --template-file "./bicep/container-api.bicep"
+  --template-file "./bicep/api-backend.bicep"
 
-  # az bicep publish \
-  #   --file "./bicep/containerapp.bicep" \
-  #   --target br:ticctech.azurecr.io/bicep/modules/containerapp:v1
+az ts create \
+  --name ts-custom-api \
+  --version "1.0" \
+  --resource-group "app-ticc-stg-ae-rg" \
+  --location "australiaeast" \
+  --template-file "./bicep/custom-api.bicep"
+

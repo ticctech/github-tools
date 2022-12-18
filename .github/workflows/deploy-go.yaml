@@ -83,34 +83,53 @@ jobs:
             --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
             --query properties.outputs) >> $GITHUB_ENV
 
-      - name: Set API params
-        id: api-params
+      - name: API backend params
+        id: backend
         uses: actions/github-script@v6
         with:
           script: |
             const outputs = JSON.parse('${{ env.ca_outputs }}')
-
             let params = `backendNames=${'${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'}`
             params += ` containerAppId=${outputs.containerAppId.value}`
             params += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
-            if ('${{ inputs.api-spec }}' !== '') {
-              const apiSpec = require('${{ inputs.api-spec }}')
-              params += ` apiSpec=${Buffer.from(JSON.stringify(apiSpec)).toString('base64')}`
-            }
             return params
           result-encoding: string
 
-      - run: |
-          echo "${{ env.ca_outputs }}"
-
-      - name: Deploy Container App API
+      - name: Deploy API backend
         run: |
           az deployment group create \
             --name ${{ github.event.repository.name }} \
             --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
+            --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-api-backend/versions/1.0" \
             --parameters "env=${{ steps.env.outputs.result }}" \
-            --parameters "apiName=${{ github.event.repository.name }}" \
-            --parameters "basePath=${{ inputs.api-path }}" \
-            --parameters ${{ steps.api-params.outputs.result }}
+            --parameters ${{ steps.backend.outputs.result }}
+
+      # - name: Set API params
+      #   id: api-params
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const outputs = JSON.parse('${{ env.ca_outputs }}')
+
+      #       let params = `backendNames=${'${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'}`
+      #       params += ` containerAppId=${outputs.containerAppId.value}`
+      #       params += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
+      #       if ('${{ inputs.api-spec }}' !== '') {
+      #         const apiSpec = require('${{ inputs.api-spec }}')
+      #         params += ` apiSpec=${Buffer.from(JSON.stringify(apiSpec)).toString('base64')}`
+      #       }
+      #       return params
+      #     result-encoding: string
+
+      # - name: Deploy Container App API
+      #   run: |
+      #     az deployment group create \
+      #       --name ${{ github.event.repository.name }} \
+      #       --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
+      #       --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
+      #       --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
+      #       --parameters "env=${{ steps.env.outputs.result }}" \
+      #       --parameters "apiName=${{ github.event.repository.name }}" \
+      #       --parameters "basePath=${{ inputs.api-path }}" \
+      #       --parameters ${{ steps.api-params.outputs.result }}

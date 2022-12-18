@@ -10,17 +10,8 @@
 @description('Environment short name')
 param env string
 
-@description('Name of the API name')
-param apiName string
-
 @description('Container App HTTP port')
 param backendNames string
-
-@description('The base path to use for resources associated with this API')
-param basePath string = '/'
-
-@description('The API specification in openapi format')
-param apiSpec string = ''
 
 @description('Container App ID')
 param containerAppId string
@@ -31,27 +22,6 @@ param containerAppFqdn string
 // get reference to API manager
 resource apiManager 'Microsoft.ApiManagement/service@2021-08-01' existing = {
   name: 'apim-ticc-${env}'
-}
-
-// endpoint specification
-resource api 'Microsoft.ApiManagement/service/apis@2021-08-01' = if (apiSpec != '') {
-  name: apiName
-  parent: apiManager
-  properties: {
-    displayName: apiName
-    apiRevision: '1'
-
-    // apiVersion: 'string'
-    isCurrent: true
-    path: basePath
-    type: 'http'
-    protocols: [
-      'https'
-    ]
-    subscriptionRequired: false
-    format: 'swagger-json'
-    value: base64ToJson(apiSpec)
-  }
 }
 
 // create backend for service
