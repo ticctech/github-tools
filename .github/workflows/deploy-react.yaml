@@ -58,7 +58,8 @@ jobs:
         id: deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.DEPLOYMENT_TOKEN }}
+          # azure_static_web_apps_api_token: ${{ secrets.DEPLOYMENT_TOKEN }}
+          azure_static_web_apps_api_token: 563c35ffe6c5e182e0cb219445c031448b0a0bdccb414824f7a2d19db42a99332-544d037c-d3fc-4048-977e-c0299a0ca3f501e25919
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: /
