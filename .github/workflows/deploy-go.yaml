@@ -88,7 +88,11 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const outputs = JSON.parse('${{ env.ca_outputs }}')
+
             let params = `backendNames=${'${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'}`
+            params += ` containerAppId=${outputs.containerAppId.value}`
+            params += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
             if ('${{ inputs.api-spec }}' !== '') {
               const apiSpec = require('${{ inputs.api-spec }}')
               params += ` apiSpec=${Buffer.from(JSON.stringify(apiSpec)).toString('base64')}`
@@ -97,7 +101,7 @@ jobs:
           result-encoding: string
 
       - run: |
-          echo ${{ env.ca_outputs }}"
+          echo "${{ env.ca_outputs }}"
 
       - name: Deploy Container App API
         run: |
@@ -109,6 +113,4 @@ jobs:
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters "apiName=${{ github.event.repository.name }}" \
             --parameters "basePath=${{ inputs.api-path }}" \
-            --parameters "containerAppId=${{ env.ca_outputs.containerAppId }}" \
-            --parameters "containerAppFqdn=${{ env.ca_outputs.containerAppFqdn }}" \
             --parameters ${{ steps.api-params.outputs.result }}
