@@ -105,8 +105,8 @@ jobs:
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters ${{ steps.backend.outputs.result }}
 
-      # - name: Set API params
-      #   id: api-params
+      # - name: Custom API params
+      #   id: custom-api
       #   uses: actions/github-script@v6
       #   with:
       #     script: |
@@ -128,8 +128,8 @@ jobs:
       #       --name ${{ github.event.repository.name }} \
       #       --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
       #       --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-      #       --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
+      #       --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-custom-api/versions/1.0" \
       #       --parameters "env=${{ steps.env.outputs.result }}" \
       #       --parameters "apiName=${{ github.event.repository.name }}" \
       #       --parameters "basePath=${{ inputs.api-path }}" \
-      #       --parameters ${{ steps.api-params.outputs.result }}
+      #       --parameters ${{ steps.custom-api.outputs.result }}
