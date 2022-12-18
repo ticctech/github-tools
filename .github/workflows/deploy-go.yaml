@@ -106,7 +106,7 @@ jobs:
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters "apiName=${{ github.event.repository.name }}" \
-            --parameters "basePath=${{ inputs.api-spec }}" \
+            --parameters "basePath=${{ inputs.api-path }}" \
             --parameters "containerAppId=${{ env.ca_outputs.containerAppId.value }}" \
             --parameters "containerAppFqdn=${{ env.ca_outputs.containerAppFqdn.value }}" \
             --parameters ${{ steps.api-params.outputs.result }}
