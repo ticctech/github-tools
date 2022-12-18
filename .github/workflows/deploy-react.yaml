@@ -50,7 +50,8 @@ jobs:
 
       - name: npm config
         run: |
-          npm config set //buf.build/gen/npm/v1/:_authToken ${{ secrets.BUF_NPM_TOKEN }}
+          # npm config set //buf.build/gen/npm/v1/:_authToken ${{ secrets.BUF_NPM_TOKEN }}
+          npm config set //buf.build/gen/npm/v1/:_authToken 4ffad9dcf40942cab188fde39933238d8ce2fb30e3b54b7d9a8fcd86af050b46
           npm config set @buf:registry https://buf.build/gen/npm/v1
 
       - name: Deploy
