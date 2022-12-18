@@ -84,12 +84,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            //let backends = '${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'
-            //if (backends === '') {
-            //  backends = '${{ github.event.repository.name }}'
-            //}
             let params = `backendNames=${'${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'}`
-            console.log(params)
 
             if ('${{ inputs.api-spec }}' !== '') {
               const apiSpec = require('${{ inputs.api-spec }}')
@@ -107,6 +102,6 @@ jobs:
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-api/versions/1.0" \
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters "apiName=${{ github.event.repository.name }}" \
-            --parameters "containerAppId=${env.ca_outputs.containerAppId.value}" \
-            --parameters "containerAppFqdn=${env.ca_outputs.containerAppFqdn.value}" \
+            --parameters "containerAppId=${{ env.ca_outputs.containerAppId.value }}" \
+            --parameters "containerAppFqdn=${{ env.ca_outputs.containerAppFqdn.value }}" \
             --parameters ${{ steps.api-params.outputs.result }}
