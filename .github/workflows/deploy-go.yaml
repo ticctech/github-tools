@@ -15,13 +15,15 @@ on:
         type: string
       api-backends:
         type: string
-        description: Comma separated list of API backends to create
-      api-path:
-        type: string
-        description: The base path for the API
-      api-spec:
-        type: string
-        description: A path to the OpenAPI or Swagger API specification
+        description: |
+          A comma separated list of custom API backend names.
+          Not required if using the default backend name (repo name)
+      # api-path:
+      #   type: string
+      #   description: The base path for the API
+      # api-spec:
+      #   type: string
+      #   description: A path to the OpenAPI or Swagger API specification
 
 jobs:
   deploy:
