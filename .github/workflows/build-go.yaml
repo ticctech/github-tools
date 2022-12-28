@@ -31,44 +31,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # copy swagger doc to docs repo
-      - name: Update api docs
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.ACTIONS_TOKEN }}
-          script: |
-            let apiSpec
-            try {
-              apiSpec = require('./gen/proto/openapi/docs.swagger.json')
-            } catch (e) {
-              console.log('No api spec found')
-              return
-            }
-
-            const path = `api/${context.repo.repo}.swagger.json`
-
-            let existing
-            try {
-              existing = await github.request("GET /repos/{owner}/{repo}/contents/{path}", {
-                owner: context.repo.owner,
-                repo: 'docs',
-                path: path,
-              });
-            } catch (e) {}
-
-            github.request("PUT /repos/{owner}/{repo}/contents/{path}", {
-              owner: context.repo.owner,
-              repo: 'docs',
-              path: path,
-              message: 'update api docs',
-              content: Buffer.from(JSON.stringify(apiSpec)).toString('base64'),
-              sha: existing?.data?.sha,
-              committer: {
-                name: context.payload.pusher.name,
-                email: context.payload.pusher.email,
-              },
-            })
-
       - name: Setup buf
         uses: bufbuild/buf-setup-action@v1
         with:

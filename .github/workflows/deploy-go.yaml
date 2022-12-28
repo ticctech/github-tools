@@ -18,18 +18,11 @@ on:
         description: |
           A comma separated list of custom API backend names.
           Not required if using the default backend name (repo name)
-      # api-path:
-      #   type: string
-      #   description: The base path for the API
-      # api-spec:
-      #   type: string
-      #   description: A path to the OpenAPI or Swagger API specification
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-
     permissions:
       contents: read
       id-token: write
@@ -107,31 +100,3 @@ jobs:
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters ${{ steps.backend.outputs.result }}
 
-      # - name: Custom API params
-      #   id: custom-api
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const outputs = JSON.parse('${{ env.ca_outputs }}')
-
-      #       let params = `backendNames=${'${{ inputs.api-backends }}' || '${{ github.event.repository.name }}'}`
-      #       params += ` containerAppId=${outputs.containerAppId.value}`
-      #       params += ` containerAppFqdn=${outputs.containerAppFqdn.value}`
-      #       if ('${{ inputs.api-spec }}' !== '') {
-      #         const apiSpec = require('${{ inputs.api-spec }}')
-      #         params += ` apiSpec=${Buffer.from(JSON.stringify(apiSpec)).toString('base64')}`
-      #       }
-      #       return params
-      #     result-encoding: string
-
-      # - name: Deploy Container App API
-      #   run: |
-      #     az deployment group create \
-      #       --name ${{ github.event.repository.name }} \
-      #       --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
-      #       --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-      #       --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-custom-api/versions/1.0" \
-      #       --parameters "env=${{ steps.env.outputs.result }}" \
-      #       --parameters "apiName=${{ github.event.repository.name }}" \
-      #       --parameters "basePath=${{ inputs.api-path }}" \
-      #       --parameters ${{ steps.custom-api.outputs.result }}
