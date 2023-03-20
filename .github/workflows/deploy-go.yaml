@@ -11,7 +11,6 @@ on:
         required: true
         type: string
       tag:
-        required: true
         type: string
       api-backends:
         type: string
@@ -45,13 +44,21 @@ jobs:
 
       - run: npm install semver
 
-      - name: Get major version
+      - name: Latest release
         id: version
         uses: actions/github-script@v6
         with:
           script: |
-            const semver = require('semver')
-            return `v${semver.major('${{ inputs.tag }}')}`
+            # If no tag is specified, use the latest release
+            if (${{ inputs.tag }} == '') {
+              const resp = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              })
+              return resp.data.tag_name
+            } else {
+              return '${{ inputs.tag }}'
+            }
           result-encoding: string
 
       - uses: actions/checkout@v3
