@@ -57,7 +57,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            # If no tag is specified, use the latest release
             if (${{ inputs.tag }} == '') {
               const resp = await github.rest.repos.getLatestRelease({
                 owner: context.repo.owner,
