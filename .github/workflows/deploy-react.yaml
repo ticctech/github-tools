@@ -10,6 +10,11 @@ on:
       environment:
         required: true
         type: string
+      # tag:
+      #   type: string
+      #   description: |
+      #     GitHub tag to use to select image to deploy. Expected in format 'v1.2.3', 
+      #     e.g. 'v0.5.0-beta.1'. If nothing is specified, the latest release tag will be used.
 
 jobs:
   deploy:
@@ -19,12 +24,6 @@ jobs:
       contents: write
       packages: read
 
-    # only run if commit message contains versioning setting
-    if: |
-      contains(github.event.head_commit.message, '[tag:patch]')
-      || contains(github.event.head_commit.message, '[tag:minor]')
-      || contains(github.event.head_commit.message, '[tag:major]')
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -32,21 +31,7 @@ jobs:
 
       - name: Generate version
         id: version
-        uses: paulhatch/semantic-version@v5.0.0-alpha2
-        with:
-          major_pattern: "[tag:major]"
-          minor_pattern: "[tag:minor]"
-
-      - name: Tag repo
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
-              sha: context.sha
-            })
+        uses: paulhatch/semantic-version@v5.0.2
 
       - name: npm config
         env:
@@ -65,3 +50,15 @@ jobs:
           output_location: dist
           # app_location: dist
           # skip_app_build: true
+
+      - name: Tag repo
+        if: ${{ inputs.environment }} == 'development'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
+              sha: context.sha
+            })
