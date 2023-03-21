@@ -57,7 +57,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            if (${{ inputs.tag }} === '') {
+            if ('${{ inputs.tag }}' === '') {
               const resp = await github.rest.repos.getLatestRelease({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
