@@ -47,7 +47,10 @@ jobs:
             }
           result-encoding: string
 
-      - run: npm install semver
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Latest release
         id: version
@@ -65,8 +68,6 @@ jobs:
               return '${{ inputs.tag }}'
             }
           result-encoding: string
-
-      - uses: actions/checkout@v3
 
       - name: Azure login
         uses: azure/login@v1
