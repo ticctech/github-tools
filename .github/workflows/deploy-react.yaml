@@ -53,8 +53,7 @@ jobs:
 
       - name: Tag repo
         # only apply tag for development environment
-        if: |
-            ${{ inputs.environment }} == 'development'
+        if: ${{ inputs.environment  == 'development'}}
         uses: actions/github-script@v6
         with:
           script: |
