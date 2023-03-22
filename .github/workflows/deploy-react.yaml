@@ -52,7 +52,9 @@ jobs:
           # skip_app_build: true
 
       - name: Tag repo
-        if: ${{ inputs.environment }} == 'development'
+        # only apply tag for development environment
+        if: |
+            ${{ inputs.environment }} == 'development'
         uses: actions/github-script@v6
         with:
           script: |
