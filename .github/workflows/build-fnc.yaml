@@ -18,14 +18,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-    # outputs:
-    #   artifact: ${{ steps.tag.outputs.artifact }}
-
-    # only run if commit message contains versioning setting
-    if: |
-      contains(github.event.head_commit.message, '[tag:patch]')
-      || contains(github.event.head_commit.message, '[tag:minor]')
-      || contains(github.event.head_commit.message, '[tag:major]')
 
     steps:
       - name: Workflowout repository
@@ -53,21 +45,7 @@ jobs:
 
       - name: Increment version
         id: version
-        uses: paulhatch/semantic-version@v5.0.0-alpha2
-        with:
-          major_pattern: "[tag:major]"
-          minor_pattern: "[tag:minor]"
-
-      - name: Tag repo
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.version_tag }}",
-              sha: context.sha
-            })
+        uses: paulhatch/semantic-version@v5.0.2
 
       - name: Create release
         uses: actions/github-script@v6
