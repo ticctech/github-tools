@@ -43,7 +43,7 @@ resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-
 // -----------------------------
 // Deploy Container App
 // -----------------------------
-resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
+resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: 'ca-${appName}'
   location: location
   identity: {
