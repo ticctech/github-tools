@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// Deploys a Container App
+// Updates a Container App with a new revision and configures traffic splitting
 // ----------------------------------------------------------------------------
 
 @description('Location of the Container Apps environment')
@@ -13,8 +13,11 @@ param location string = resourceGroup().location
 @description('Environment short name')
 param env string
 
-@description('Container App HTTP port')
-param appName string
+@description('Base Container App name (without suffix)')
+param baseAppName string
+
+@description('Revision suffix (e.g., "test")')
+param revisionSuffix string
 
 @description('Container App image name')
 param imageTag string
@@ -35,16 +38,16 @@ resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' exist
   name: 'cae-ticc-${env}'
 }
 
-// get a reference to the container apps environment
+// get a reference to the managed identity
 resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
   name: 'id-ticc-${env}'
 }
 
 // -----------------------------
-// Deploy Container App
+// Update Container App with new revision and traffic splitting
 // -----------------------------
 resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: 'ca-${appName}'
+  name: 'ca-${baseAppName}'
   location: location
   identity: {
     type: 'UserAssigned'
@@ -55,9 +58,9 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
   properties: {
     managedEnvironmentId: managedEnv.id
     configuration: {
-      activeRevisionsMode: env == 'dev' ? 'multiple' : 'single'
+      activeRevisionsMode: 'multiple'  // Enable multiple revisions
       dapr: {
-        appId: appName
+        appId: baseAppName
         appPort: 8080
         appProtocol: 'http'
         enabled: true
@@ -88,9 +91,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
       ]
     }
     template: {
+      revisionSuffix: revisionSuffix
       containers: [
         {
-          name: appName
+          name: baseAppName
           image: imageTag
           resources: {
             cpu: any('0.5')
@@ -138,3 +142,4 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
 
 output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
 output containerAppId string = containerApp.id
+output revisionName string = '${baseAppName}--${revisionSuffix}'
