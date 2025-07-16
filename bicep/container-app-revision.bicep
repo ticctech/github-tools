@@ -1,136 +1,108 @@
-// ----------------------------------------------------------------------------
-// Updates a Container App with a new revision and configures traffic splitting
-// ----------------------------------------------------------------------------
+@description('The name of the container app to add a revision to')
+param containerAppName string
 
-@description('Location of the Container Apps environment')
-param location string = resourceGroup().location
-
-@allowed([
-  'dev'
-  'stg'
-  'prd'
-])
-@description('Environment short name')
+@description('The environment where this container app is deployed')
 param env string
 
-@description('Base Container App name (without suffix)')
-param baseAppName string
-
-@description('Revision suffix (e.g., "test")')
+@description('The revision suffix to append to the revision name')
 param revisionSuffix string
 
-@description('Container App image name')
-param imageTag string
+@description('The container image URL')
+param containerImage string
 
-@description('Container App target port')
-param targetPort int = 8080
+@description('The port the container listens on')
+param containerPort int = 8080
 
-@secure()
-@description('GitHub container registry user')
-param ghcrUser string
+@description('The CPU allocation for the container')
+param cpu string = '0.25'
 
-@secure()
-@description('GitHub container registry personal access token')
-param ghcrPat string
+@description('The memory allocation for the container')
+param memory string = '0.5Gi'
 
-// get a reference to the container apps environment
-resource managedEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
-  name: 'cae-ticc-${env}'
+@description('The minimum number of replicas')
+param minReplicas int = 0
+
+@description('The maximum number of replicas')
+param maxReplicas int = 10
+
+@description('Environment variables for the container')
+param environmentVariables array = []
+
+resource existingContainerApp 'Microsoft.App/containerApps@2023-05-01' existing = {
+  name: containerAppName
 }
 
-// get a reference to the managed identity
-resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
-  name: 'id-ticc-${env}'
-}
-
-// -----------------------------
-// Update Container App with new revision and traffic splitting
-// -----------------------------
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: 'ca-${baseAppName}'
-  location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${managedId.id}': {}
-    }
-  }
+resource containerAppRevision 'Microsoft.App/containerApps@2023-05-01' = {
+  name: containerAppName
+  location: resourceGroup().location
   properties: {
-    managedEnvironmentId: managedEnv.id
+    managedEnvironmentId: existingContainerApp.properties.managedEnvironmentId
     configuration: {
-      activeRevisionsMode: 'multiple'  // Enable multiple revisions
-      dapr: {
-        appId: baseAppName
-        appPort: 8080
-        appProtocol: 'http'
-        enabled: true
-      }
+      activeRevisionsMode: 'Multiple'
       ingress: {
-        external: true
-        targetPort: targetPort
-        allowInsecure: false
+        external: existingContainerApp.properties.configuration.ingress.external
+        targetPort: containerPort
+        allowInsecure: existingContainerApp.properties.configuration.ingress.allowInsecure
         traffic: [
+          // Keep existing stable revision with 100% traffic
           {
-            latestRevision: true
+            latestRevision: false
+            revisionName: last(split(existingContainerApp.properties.latestRevisionName, '--'))
             weight: 100
+          }
+          // Add test revision with 0% traffic - APIM will route to it directly
+          {
+            latestRevision: false
+            revisionName: '${containerAppName}--${revisionSuffix}'
+            weight: 0
           }
         ]
       }
-      registries: [
-        {
-          server: 'ghcr.io'
-          username: ghcrUser
-          passwordSecretRef: 'ghcr-pat'
-        }
-      ]
-      secrets: [
-        {
-          name: 'ghcr-pat'
-          value: ghcrPat
-        }
-      ]
+      dapr: existingContainerApp.properties.configuration.dapr
+      secrets: existingContainerApp.properties.configuration.secrets
     }
     template: {
       revisionSuffix: revisionSuffix
       containers: [
         {
-          name: baseAppName
-          image: imageTag
+          name: containerAppName
+          image: containerImage
           resources: {
-            cpu: any('0.5')
-            memory: '1Gi'
+            cpu: cpu
+            memory: memory
           }
+          probes: [
+            {
+              type: 'Readiness'
+              httpGet: {
+                path: '/health'
+                port: containerPort
+              }
+              initialDelaySeconds: 5
+              periodSeconds: 10
+            }
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: containerPort
+              }
+              initialDelaySeconds: 15
+              periodSeconds: 20
+            }
+          ]
+          env: environmentVariables
         }
       ]
       scale: {
-        minReplicas: 1
-        maxReplicas: 2
+        minReplicas: minReplicas
+        maxReplicas: maxReplicas
         rules: [
           {
-            name: 'httpscalingrule'
+            name: 'http-scale-rule'
             http: {
               metadata: {
-                concurrentRequests: '100'
-              }
-            }
-          }
-          {
-            name: 'cpuscalingrule'
-            custom: {
-              type: 'cpu'
-              metadata: {
-                type: 'Utilization'
-                value: '75'
-              }
-            }
-          }
-          {
-            name: 'memoryscalingrule'
-            custom: {
-              type: 'memory'
-              metadata: {
-                type: 'Utilization'
-                value: '75'
+                concurrentRequests: '10'
               }
             }
           }
@@ -140,6 +112,5 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
   }
 }
 
-output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
-output containerAppId string = containerApp.id
-output revisionName string = '${baseAppName}--${revisionSuffix}'
+output revisionName string = '${containerAppName}--${revisionSuffix}'
+output containerAppUrl string = 'https://${existingContainerApp.properties.configuration.ingress.fqdn}'
