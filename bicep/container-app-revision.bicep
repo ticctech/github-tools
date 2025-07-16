@@ -28,6 +28,14 @@ param maxReplicas int = 10
 @description('Environment variables for the container')
 param environmentVariables array = []
 
+@secure()
+@description('GitHub container registry user')
+param ghcrUser string
+
+@secure()
+@description('GitHub container registry personal access token')
+param ghcrPat string
+
 resource existingContainerApp 'Microsoft.App/containerApps@2023-05-01' existing = {
   name: containerAppName
 }
@@ -43,23 +51,39 @@ resource containerAppRevision 'Microsoft.App/containerApps@2023-05-01' = {
         external: existingContainerApp.properties.configuration.ingress.external
         targetPort: containerPort
         allowInsecure: existingContainerApp.properties.configuration.ingress.allowInsecure
-        traffic: [
+        traffic: concat(
           // Keep existing stable revision with 100% traffic
-          {
-            latestRevision: false
-            revisionName: last(split(existingContainerApp.properties.latestRevisionName, '--'))
-            weight: 100
-          }
+          filter(
+            existingContainerApp.properties.configuration.ingress.traffic ?? [],
+            traffic => traffic.revisionName == null || !contains(traffic.revisionName, '--test')
+          ),
           // Add test revision with 0% traffic - APIM will route to it directly
-          {
-            latestRevision: false
-            revisionName: '${containerAppName}--${revisionSuffix}'
-            weight: 0
-          }
-        ]
+          [
+            {
+              latestRevision: false
+              revisionName: '${containerAppName}--${revisionSuffix}'
+              weight: 0
+            }
+          ]
+        )
       }
       dapr: existingContainerApp.properties.configuration.dapr
-      secrets: existingContainerApp.properties.configuration.secrets
+      registries: [
+        {
+          server: 'ghcr.io'
+          username: ghcrUser
+          passwordSecretRef: 'ghcr-pat'
+        }
+      ]
+      secrets: concat(
+        existingContainerApp.properties.configuration.secrets ?? [],
+        [
+          {
+            name: 'ghcr-pat'
+            value: ghcrPat
+          }
+        ]
+      )
     }
     template: {
       revisionSuffix: revisionSuffix
