@@ -123,7 +123,7 @@ jobs:
               --name "${{ github.event.repository.name }}" \
               --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-              --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/1.0" \
+              --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/1.1" \
               --parameters "env=${{ steps.env.outputs.result }}" \
               --parameters "appName=${{ github.event.repository.name }}" \
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \

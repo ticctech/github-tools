@@ -40,6 +40,11 @@ resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-
   name: 'id-ticc-${env}'
 }
 
+// Get existing container app to check for test revisions
+resource existingContainerApp 'Microsoft.App/containerApps@2022-03-01' existing = {
+  name: 'ca-${appName}'
+}
+
 // -----------------------------
 // Deploy Container App
 // -----------------------------
@@ -66,7 +71,28 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
         external: true
         targetPort: targetPort
         allowInsecure: false
-        traffic: [
+        traffic: env == 'dev' ? concat(
+          [
+            // Always route 100% traffic to the latest (new dev) revision
+            {
+              latestRevision: true
+              weight: 100
+            }
+          ],
+          // Add test revisions with 0% traffic (preserve them but inactive)
+          map(
+            filter(
+              existingContainerApp.properties.configuration.ingress.traffic ?? [],
+              traffic => traffic.revisionName != null && contains(traffic.revisionName, '--test')
+            ),
+            traffic => {
+              latestRevision: false
+              revisionName: traffic.revisionName
+              weight: 0
+            }
+          )
+        ) : [
+          // For staging/prod, simple traffic configuration
           {
             latestRevision: true
             weight: 100
