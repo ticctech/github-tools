@@ -55,7 +55,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
   properties: {
     managedEnvironmentId: managedEnv.id
     configuration: {
-      activeRevisionsMode: env == 'dev' ? 'multiple' : 'single'
+      activeRevisionsMode: 'single'
       dapr: {
         appId: appName
         appPort: 8080
