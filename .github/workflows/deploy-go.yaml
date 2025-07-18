@@ -105,7 +105,7 @@ jobs:
           
           if [ "$IS_TEST" = "true" ]; then
             # For test environment, deploy as new revision to existing dev container app
-            echo ca_outputs=$(az deployment group create \
+            CA_OUTPUTS=$(az deployment group create \
               --name "$BASE_APP_NAME-test-revision" \
               --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
@@ -116,10 +116,11 @@ jobs:
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \
               --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
               --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
-              --query properties.outputs) >> $GITHUB_ENV
+              --query properties.outputs)
+            echo "ca_outputs=$(echo $CA_OUTPUTS | jq -c .)" >> $GITHUB_ENV
           else
             # For dev/staging/prod, deploy as normal container app
-            echo ca_outputs=$(az deployment group create \
+            CA_OUTPUTS=$(az deployment group create \
               --name "${{ github.event.repository.name }}" \
               --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
@@ -129,7 +130,8 @@ jobs:
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \
               --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
               --parameters "ghcrPat=${{ secrets.GHCR_PAT }}" \
-              --query properties.outputs) >> $GITHUB_ENV
+              --query properties.outputs)
+            echo "ca_outputs=$(echo $CA_OUTPUTS | jq -c .)" >> $GITHUB_ENV
           fi
 
       - name: API backend params
