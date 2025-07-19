@@ -94,22 +94,23 @@ jobs:
             const latestTag = '${{ steps.prev-tag.outputs.result }}'
 
             const increment = async () => {
-              if (semver.prerelease(latestTag)){
-                return 'prerelease'
-              }
-              
               // Get commits since last tag to check for breaking changes
               const commits = await github.rest.repos.listCommits({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                since: '${{ steps.prev-tag.outputs.result }}',
+                since: latestTag,
               })
               
               const messages = commits.data.map(c => c.commit.message.toLowerCase())
               
-              // Check for breaking changes in commit messages
+              // Check for breaking changes in commit messages - this takes priority
               if (messages.some(msg => msg.includes('breaking') || msg.includes('major'))) {
                 return 'major'
+              }
+              
+              // If it's a prerelease and no breaking changes, increment prerelease
+              if (semver.prerelease(latestTag)){
+                return 'prerelease'
               }
               
               // Check for proto changes
