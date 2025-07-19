@@ -98,15 +98,30 @@ jobs:
                 return 'prerelease'
               }
               
-              // check for proto changes
+              // Get commits since last tag to check for breaking changes
+              const commits = await github.rest.repos.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                since: '${{ steps.prev-tag.outputs.result }}',
+              })
+              
+              const messages = commits.data.map(c => c.commit.message.toLowerCase())
+              
+              // Check for breaking changes in commit messages
+              if (messages.some(msg => msg.includes('breaking') || msg.includes('major'))) {
+                return 'major'
+              }
+              
+              // Check for proto changes
               const latestRelease = `https://${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}.git#tag=${latestTag}`
               const currProto = await getProtoJson('.')
               const prevProto = await getProtoJson(latestRelease)
 
               if (jsonDiff.diff(currProto, prevProto, { sort: true })) {
-                return 'patch'
+                return 'minor'  // Proto changes are feature changes
               }
-              return 'minor'
+              
+              return 'patch'    // Default to patch for regular changes
             }
             return `v${semver.inc(latestTag, await increment())}`
           result-encoding: string
