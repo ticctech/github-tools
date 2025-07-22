@@ -1,0 +1,128 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - test
+          - production
+
+      deployment_type:
+        description: 'Type of deployment'
+        required: true
+        default: 'go'
+        type: choice
+        options:
+          - go
+          - react
+          - function
+
+      tag:
+        description: 'GitHub tag to deploy (e.g., v1.2.3). Leave empty for latest release.'
+        required: false
+        type: string
+
+      api_backends:
+        description: 'Custom API backend names (comma-separated). Leave empty for default.'
+        required: false
+        type: string
+
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: string
+
+      deployment_type:
+        description: 'Type of deployment'
+        required: true
+        default: 'go'
+        type: string
+
+      tag:
+        description: 'GitHub tag to deploy (e.g., v1.2.3). Leave empty for latest release.'
+        required: false
+        type: string
+
+      api_backends:
+        description: 'Custom API backend names (comma-separated). Leave empty for default.'
+        required: false
+        type: string
+
+jobs:
+  # Deploy Go Container App
+  deploy-go:
+    if: ${{ inputs.deployment_type == 'go' }}
+    uses: ./.github/workflows/deploy-go.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      tag: ${{ inputs.tag }}
+      api-backends: ${{ inputs.api_backends }}
+    secrets: inherit
+
+  # Deploy React App
+  deploy-react:
+    if: ${{ inputs.deployment_type == 'react' }}
+    uses: ./.github/workflows/deploy-react.yaml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  # Deploy Function App
+  deploy-function:
+    if: ${{ inputs.deployment_type == 'function' }}
+    uses: ./.github/workflows/deploy-fnc.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      func-name: ${{ github.event.repository.name }}
+    secrets: inherit
+
+  # Summary job to show deployment results
+  deployment-summary:
+    runs-on: ubuntu-latest
+    needs: [deploy-go, deploy-react, deploy-function]
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## Manual Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Type:** ${{ inputs.deployment_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag:** ${{ inputs.tag || 'Latest Release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          
+          # Check job results
+          if [[ "${{ needs.deploy-go.result }}" == "success" ]]; then
+            echo "- **Go Deployment:** ✅ Success" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-go.result }}" == "failure" ]]; then
+            echo "- **Go Deployment:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-go.result }}" == "skipped" ]]; then
+            echo "- **Go Deployment:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.deploy-react.result }}" == "success" ]]; then
+            echo "- **React Deployment:** ✅ Success" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-react.result }}" == "failure" ]]; then
+            echo "- **React Deployment:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-react.result }}" == "skipped" ]]; then
+            echo "- **React Deployment:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.deploy-function.result }}" == "success" ]]; then
+            echo "- **Function Deployment:** ✅ Success" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-function.result }}" == "failure" ]]; then
+            echo "- **Function Deployment:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-function.result }}" == "skipped" ]]; then
+            echo "- **Function Deployment:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
