@@ -70,7 +70,7 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.version_new_tag }}",
+              ref: "refs/tags/${{ steps.version.outputs.new_tag }}",
               sha: context.sha
             })
 
@@ -83,16 +83,16 @@ jobs:
             await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.version_new_tag }}",
+              ref: "refs/tags/${{ steps.version.outputs.new_tag }}",
               sha: context.sha
             })
             
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: "${{ steps.version.outputs.version_new_tag }}",
-              name: "${{ steps.version.outputs.version_new_tag }}",
-              body: "Production release ${{ steps.version.outputs.version_new_tag }}",
+              tag_name: "${{ steps.version.outputs.new_tag }}",
+              name: "${{ steps.version.outputs.new_tag }}",
+              body: "Production release ${{ steps.version.outputs.new_tag }}",
               draft: false,
               prerelease: false
             })
