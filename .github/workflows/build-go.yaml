@@ -49,12 +49,73 @@ jobs:
             return resp.data.tag_name
           result-encoding: string
 
+      - name: Check for breaking change approval
+        id: breaking-check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('Event name:', context.eventName)
+            console.log('Event payload keys:', Object.keys(context.payload))
+            
+            // Check various possible sources for [breaking] tag
+            const sources = [
+              context.payload.head_commit?.message,
+              context.payload.pull_request?.title,
+              context.payload.pull_request?.body,
+              context.payload.commits?.[0]?.message,
+              // For workflow_call, check the triggering workflow
+              context.payload.workflow_run?.head_commit?.message
+            ]
+            
+            // Log all sources for debugging
+            sources.forEach((source, index) => {
+              if (source) console.log(`Source ${index}:`, source)
+            })
+            
+            // Check if any source contains [breaking]
+            const hasBreaking = sources.some(source => 
+              source && source.toLowerCase().includes('[breaking]')
+            )
+            
+            if (hasBreaking) {
+              console.log('Found [breaking] tag - will skip breaking change check')
+              return 'true'
+            }
+            
+            // If PR event, check all commits in the PR
+            if (context.payload.pull_request) {
+              console.log('Checking PR commits for [breaking] tag')
+              try {
+                const commits = await github.rest.pulls.listCommits({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.payload.pull_request.number
+                })
+                
+                const hasBreakingInCommits = commits.data.some(commit => {
+                  const message = commit.commit.message?.toLowerCase() || ''
+                  console.log('Checking commit message:', message)
+                  return message.includes('[breaking]')
+                })
+                
+                if (hasBreakingInCommits) {
+                  console.log('Found [breaking] in PR commits')
+                  return 'true'
+                }
+              } catch (error) {
+                console.log('Error checking PR commits:', error.message)
+              }
+            }
+            
+            console.log('No [breaking] tag found')
+            return 'false'
+          result-encoding: string
+
       # check for breaking changes in protos
       - name: Fail when breaking proto change
         if: |
           !(contains(steps.prev-tag.outputs.result, 'alpha') ||
-          contains(github.event.head_commit.message, '[breaking]') ||
-          contains(github.event.pull_request.title, '[breaking]'))
+          steps.breaking-check.outputs.result == 'true')
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
