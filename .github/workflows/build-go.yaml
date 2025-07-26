@@ -53,7 +53,8 @@ jobs:
       - name: Fail when breaking proto change
         if: |
           !(contains(steps.prev-tag.outputs.result, 'alpha') ||
-          contains(github.event.head_commit.message, '[breaking]'))
+          contains(github.event.head_commit.message, '[breaking]') ||
+          contains(github.event.pull_request.title, '[breaking]'))
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
