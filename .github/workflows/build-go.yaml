@@ -157,21 +157,19 @@ jobs:
             console.log('Latest tag:', latestTag)
 
             const increment = async () => {
-              // Get commits since last tag to check for breaking changes
-              const commits = await github.rest.repos.listCommits({
+              // Get only the latest commit message
+              const latestCommit = await github.rest.repos.getCommit({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                since: latestTag,
+                ref: context.sha
               })
               
-              console.log('Commits since last tag:', commits.data.length)
+              const latestMessage = latestCommit.data.commit.message.toLowerCase()
+              console.log('Latest commit message:', latestMessage)
               
-              const messages = commits.data.map(c => c.commit.message.toLowerCase())
-              console.log('Commit messages:', messages)
-              
-              // Check for breaking changes in commit messages - this takes priority
-              const hasBreaking = messages.some(msg => msg.includes('breaking') || msg.includes('major'))
-              console.log('Has breaking changes:', hasBreaking)
+              // Check for breaking changes in the latest commit message only
+              const hasBreaking = latestMessage.includes('breaking') || latestMessage.includes('major')
+              console.log('Has breaking changes in latest commit:', hasBreaking)
               
               if (hasBreaking) {
                 console.log('Returning major increment')
