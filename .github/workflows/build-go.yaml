@@ -193,7 +193,6 @@ jobs:
                 const currProto = await getProtoJson('.')
                 const prevProto = await getProtoJson(latestRelease)
                 const protoDiff = jsonDiff.diff(currProto, prevProto, { sort: true })
-                console.log('Proto changes detected:', !!protoDiff)
 
                 if (protoDiff) {
                   console.log('Returning minor increment for proto changes')
