@@ -167,13 +167,22 @@ jobs:
               const latestMessage = latestCommit.data.commit.message.toLowerCase()
               console.log('Latest commit message:', latestMessage)
               
-              // Check for breaking changes in the latest commit message only
-              const hasBreaking = latestMessage.includes('breaking') || latestMessage.includes('major')
+              // Check for version increment keywords in the latest commit message
+              const hasMajor = latestMessage.includes('major')
+              const hasBreaking = latestMessage.includes('breaking')
+              const hasMinor = latestMessage.includes('minor')
+              console.log('Has major changes in latest commit:', hasMajor)
               console.log('Has breaking changes in latest commit:', hasBreaking)
+              console.log('Has minor changes in latest commit:', hasMinor)
               
-              if (hasBreaking) {
+              if (hasMajor) {
                 console.log('Returning major increment')
                 return 'major'
+              }
+              
+              if (hasBreaking || hasMinor) {
+                console.log('Returning minor increment')
+                return 'minor'
               }
               
               // If it's a prerelease and no breaking changes, increment prerelease
