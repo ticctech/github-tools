@@ -13,6 +13,14 @@ param location string = resourceGroup().location
 @description('Environment short name')
 param env string
 
+@allowed([
+  'development'
+  'staging'
+  'production'
+])
+@description('Application environment identifier (development, staging, production)')
+param appEnvironment string = 'development'
+
 @description('Container App HTTP port')
 param appName string
 
@@ -96,6 +104,12 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
             cpu: any('0.5')
             memory: '1Gi'
           }
+          env: [
+            {
+              name: 'APP_ENV'
+              value: appEnvironment
+            }
+          ]
         }
       ]
       scale: {
