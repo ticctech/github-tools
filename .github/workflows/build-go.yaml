@@ -154,39 +154,72 @@ jobs:
             }
 
             const latestTag = '${{ steps.prev-tag.outputs.result }}'
+            console.log('Latest tag:', latestTag)
 
             const increment = async () => {
-              // Get commits since last tag to check for breaking changes
-              const commits = await github.rest.repos.listCommits({
+              // Get only the latest commit message
+              const latestCommit = await github.rest.repos.getCommit({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                since: latestTag,
+                ref: context.sha
               })
               
-              const messages = commits.data.map(c => c.commit.message.toLowerCase())
+              const latestMessage = latestCommit.data.commit.message.toLowerCase()
+              console.log('Latest commit message:', latestMessage)
               
-              // Check for breaking changes in commit messages - this takes priority
-              if (messages.some(msg => msg.includes('breaking') || msg.includes('major'))) {
+              // Check for version increment keywords in the latest commit message
+              const hasMajor = latestMessage.includes('major')
+              const hasBreaking = latestMessage.includes('breaking')
+              const hasMinor = latestMessage.includes('minor')
+              console.log('Has major changes in latest commit:', hasMajor)
+              console.log('Has breaking changes in latest commit:', hasBreaking)
+              console.log('Has minor changes in latest commit:', hasMinor)
+              
+              if (hasMajor) {
+                console.log('Returning major increment')
                 return 'major'
               }
               
+              if (hasBreaking || hasMinor) {
+                console.log('Returning minor increment')
+                return 'minor'
+              }
+              
               // If it's a prerelease and no breaking changes, increment prerelease
-              if (semver.prerelease(latestTag)){
+              const isPrerelease = semver.prerelease(latestTag)
+              console.log('Is prerelease:', isPrerelease)
+              
+              if (isPrerelease){
+                console.log('Returning prerelease increment')
                 return 'prerelease'
               }
               
               // Check for proto changes
+              console.log('Checking for proto changes...')
               const latestRelease = `https://${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}.git#tag=${latestTag}`
-              const currProto = await getProtoJson('.')
-              const prevProto = await getProtoJson(latestRelease)
+              
+              try {
+                const currProto = await getProtoJson('.')
+                const prevProto = await getProtoJson(latestRelease)
+                const protoDiff = jsonDiff.diff(currProto, prevProto, { sort: true })
 
-              if (jsonDiff.diff(currProto, prevProto, { sort: true })) {
-                return 'minor'  // Proto changes are feature changes
+                if (protoDiff) {
+                  console.log('Returning minor increment for proto changes')
+                  return 'minor'
+                }
+              } catch (error) {
+                console.log('Error checking proto changes:', error.message)
               }
               
-              return 'patch'    // Default to patch for regular changes
+              console.log('Returning patch increment (default)')
+              return 'patch'
             }
-            return `v${semver.inc(latestTag, await increment())}`
+            
+            const incrementType = await increment()
+            console.log('Final increment type:', incrementType)
+            const newVersion = `v${semver.inc(latestTag, incrementType)}`
+            console.log('New version:', newVersion)
+            return newVersion
           result-encoding: string
 
       # unit tests

@@ -80,19 +80,38 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.new_tag }}",
-              sha: context.sha
-            })
+            const tagName = "${{ steps.version.outputs.new_tag }}";
             
+            // Check if tag already exists, create only if it doesn't
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tagName}`
+              });
+              console.log(`Tag ${tagName} already exists, skipping tag creation`);
+            } catch (error) {
+              if (error.status === 404) {
+                // Tag doesn't exist, create it
+                await github.rest.git.createRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `refs/tags/${tagName}`,
+                  sha: context.sha
+                });
+                console.log(`Created tag ${tagName}`);
+              } else {
+                throw error;
+              }
+            }
+            
+            // Create release (this will use existing tag if present)
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: "${{ steps.version.outputs.new_tag }}",
-              name: "${{ steps.version.outputs.new_tag }}",
-              body: "Production release ${{ steps.version.outputs.new_tag }}",
+              tag_name: tagName,
+              name: tagName,
+              body: "Production release " + tagName,
               draft: false,
               prerelease: false
             })
