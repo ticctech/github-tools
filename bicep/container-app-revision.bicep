@@ -4,14 +4,6 @@ param containerAppName string
 @description('The environment where this container app is deployed')
 param env string
 
-@allowed([
-  'development'
-  'staging'
-  'production'
-])
-@description('Application environment identifier (development, staging, production)')
-param appEnvironment string = 'development'
-
 @description('The revision suffix to append to the revision name')
 param revisionSuffix string
 
@@ -128,7 +120,7 @@ resource containerAppRevision 'Microsoft.App/containerApps@2023-05-01' = {
             [
               {
                 name: 'APP_ENV'
-                value: appEnvironment
+                value: env
               }
             ]
           )

@@ -50,23 +50,6 @@ jobs:
             }
           result-encoding: string
 
-      - name: Set APP_ENV
-        id: app-env
-        uses: actions/github-script@v6
-        with:
-          script: |
-            switch('${{ inputs.environment }}') {
-              case 'staging':
-                return "staging"
-              case 'production':
-                return "production"
-              case 'test':
-                return "development"  // test uses development environment
-              default:
-                return "development"
-            }
-          result-encoding: string
-
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -128,7 +111,6 @@ jobs:
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
               --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app-revision/versions/1.0" \
               --parameters "env=${{ steps.env.outputs.result }}" \
-              --parameters "appEnvironment=${{ steps.app-env.outputs.result }}" \
               --parameters "baseAppName=$BASE_APP_NAME" \
               --parameters "revisionSuffix=$REVISION_SUFFIX" \
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \
@@ -144,7 +126,6 @@ jobs:
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
               --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/${{ inputs.environment == 'development' && '1.1' || '1.0' }}" \
               --parameters "env=${{ steps.env.outputs.result }}" \
-              --parameters "appEnvironment=${{ steps.app-env.outputs.result }}" \
               --parameters "appName=${{ github.event.repository.name }}" \
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \
               --parameters "ghcrUser=${{ secrets.GHCR_USER }}" \
