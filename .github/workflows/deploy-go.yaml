@@ -71,6 +71,94 @@ jobs:
             }
           result-encoding: string
 
+      - name: Check if image exists in GHCR
+        id: check-image
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const version = '${{ steps.version.outputs.result }}'
+            const repo = context.repo.repo.toLowerCase()
+            const owner = context.repo.owner.toLowerCase()
+            
+            try {
+              // Check if the container image exists in GHCR
+              const response = await github.request('GET /orgs/{org}/packages/container/{package_name}/versions', {
+                org: owner,
+                package_name: repo,
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
+              })
+              
+              // Look for a version with matching tag
+              const versionExists = response.data.some(v => 
+                v.metadata && v.metadata.container && v.metadata.container.tags.includes(version)
+              )
+              
+              console.log(`Image ghcr.io/${owner}/${repo}:${version} exists: ${versionExists}`)
+              return versionExists
+            } catch (error) {
+              console.log(`Error checking image: ${error.message}`)
+              return false
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image if missing
+        id: build-if-missing
+        if: steps.check-image.outputs.result == 'false'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('Image not found in GHCR, triggering build...')
+            
+            // Create a repository dispatch to trigger build workflow
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build-go.yaml',
+              ref: context.ref,
+            })
+            
+            console.log('Build workflow triggered, waiting for completion...')
+            return 'triggered'
+
+      - name: Wait for build completion
+        if: steps.build-if-missing.outputs.result == 'triggered'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const maxWaitTime = 15 * 60 * 1000 // 15 minutes
+            const pollInterval = 30 * 1000 // 30 seconds
+            const startTime = Date.now()
+            
+            while (Date.now() - startTime < maxWaitTime) {
+              console.log('Waiting for build to complete...')
+              
+              // Check recent workflow runs
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'build-go.yaml',
+                per_page: 5
+              })
+              
+              const recentRun = runs.data.workflow_runs[0]
+              if (recentRun && recentRun.status === 'completed') {
+                if (recentRun.conclusion === 'success') {
+                  console.log('Build completed successfully')
+                  return 'success'
+                } else {
+                  throw new Error(`Build failed with conclusion: ${recentRun.conclusion}`)
+                }
+              }
+              
+              // Wait before next check
+              await new Promise(resolve => setTimeout(resolve, pollInterval))
+            }
+            
+            throw new Error('Build timed out after 15 minutes')
+
       - name: Azure login
         uses: azure/login@v1
         with:
