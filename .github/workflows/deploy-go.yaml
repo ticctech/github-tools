@@ -55,32 +55,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine version
+      - name: Latest release
         id: version
         uses: actions/github-script@v6
         with:
           script: |
-            // If a specific tag is provided, use it
-            if ('${{ inputs.tag }}' !== '') {
+            if ('${{ inputs.tag }}' === '') {
+              const resp = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              })
+              return resp.data.tag_name
+            } else {
               return '${{ inputs.tag }}'
             }
-            
-            // Get current branch name
-            const branchName = '${{ github.ref_name }}'
-            
-            // If deploying from a release branch, create a version from branch + commit
-            if (branchName.startsWith('release/')) {
-              const shortSha = '${{ github.sha }}'.substring(0, 7)
-              const releaseDate = branchName.replace('release/', '')
-              return `${releaseDate}-${shortSha}`
-            }
-            
-            // For other branches (like main), use latest release tag
-            const resp = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            })
-            return resp.data.tag_name
           result-encoding: string
 
       - name: Azure login
