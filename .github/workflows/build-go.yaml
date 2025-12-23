@@ -230,14 +230,61 @@ jobs:
               return 'patch'
             }
             
-            const incrementType = await increment()
-            console.log('Final increment type:', incrementType)
-            let newVersion = `v${semver.inc(latestTag, incrementType)}`
-            
-            // For non-main branches, append branch name and short SHA as prerelease identifier
             const ref = context.ref
             console.log('Git ref:', ref)
             
+            let baseVersion = latestTag
+            let skipIncrement = false
+            
+            // For non-main branches, find the version at the merge-base with main
+            if (ref !== 'refs/heads/main') {
+              try {
+                console.log('Finding merge-base with main...')
+                let mergeBase = ''
+                await exec.exec('git', ['merge-base', 'origin/main', 'HEAD'], {
+                  listeners: {
+                    stdout: (data) => {
+                      mergeBase += data.toString()
+                    }
+                  }
+                })
+                mergeBase = mergeBase.trim()
+                console.log('Merge-base commit:', mergeBase)
+                
+                // Find the most recent tag reachable from merge-base
+                let tagAtBase = ''
+                await exec.exec('git', ['describe', '--tags', '--abbrev=0', mergeBase], {
+                  listeners: {
+                    stdout: (data) => {
+                      tagAtBase += data.toString()
+                    }
+                  }
+                })
+                tagAtBase = tagAtBase.trim()
+                console.log('Tag at merge-base:', tagAtBase)
+                
+                if (tagAtBase) {
+                  baseVersion = tagAtBase
+                  skipIncrement = true
+                  console.log('Using base version from branch point (no increment):', baseVersion)
+                }
+              } catch (error) {
+                console.log('Error finding merge-base tag:', error.message)
+                console.log('Falling back to latest tag with increment')
+              }
+            }
+            
+            let newVersion
+            if (skipIncrement) {
+              newVersion = baseVersion
+              console.log('Skipping version increment for non-main branch')
+            } else {
+              const incrementType = await increment()
+              console.log('Final increment type:', incrementType)
+              newVersion = `v${semver.inc(baseVersion, incrementType)}`
+            }
+            
+            // For non-main branches, append branch name and short SHA as prerelease identifier
             if (ref !== 'refs/heads/main') {
               const branchName = ref.replace('refs/heads/', '').replace(/[^a-zA-Z0-9]/g, '-')
               const shortSha = context.sha.substring(0, 7)
