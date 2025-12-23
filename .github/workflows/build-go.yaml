@@ -284,11 +284,11 @@ jobs:
               newVersion = `v${semver.inc(baseVersion, incrementType)}`
             }
             
-            // For non-main branches, append branch name and short SHA as prerelease identifier
+            // For non-main branches, append branch name and timestamp as prerelease identifier
             if (ref !== 'refs/heads/main') {
               const branchName = ref.replace('refs/heads/', '').replace(/[^a-zA-Z0-9]/g, '-')
-              const shortSha = context.sha.substring(0, 7)
-              newVersion = `${newVersion}-${branchName}.${shortSha}`
+              const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '')
+              newVersion = `${newVersion}-${branchName}.${timestamp}`
               console.log('Non-main branch detected, using prerelease version:', newVersion)
             }
             
