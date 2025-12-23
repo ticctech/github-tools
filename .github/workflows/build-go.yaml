@@ -7,7 +7,19 @@ name: Build Go container
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_breaking_check:
+        description: 'Skip breaking change validation'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      skip_breaking_check:
+        description: 'Skip breaking change validation'
+        required: false
+        type: boolean
+        default: false
     outputs:
       tag:
         description: The git tag for the build
@@ -116,7 +128,8 @@ jobs:
       - name: Fail when breaking proto change
         if: |
           !(contains(steps.prev-tag.outputs.result, 'alpha') ||
-          steps.breaking-check.outputs.result == 'true')
+          steps.breaking-check.outputs.result == 'true' ||
+          inputs.skip_breaking_check == true)
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
