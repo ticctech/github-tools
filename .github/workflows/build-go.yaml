@@ -182,9 +182,10 @@ jobs:
               console.log('Latest commit message:', latestMessage)
               
               // Check for version increment keywords in the latest commit message
-              const hasMajor = latestMessage.includes('major')
-              const hasBreaking = latestMessage.includes('breaking')
-              const hasMinor = latestMessage.includes('minor')
+              // Support both [keyword] and keyword formats
+              const hasMajor = latestMessage.includes('[major]') || latestMessage.includes('major')
+              const hasBreaking = latestMessage.includes('[breaking]') || latestMessage.includes('breaking')
+              const hasMinor = latestMessage.includes('[minor]') || latestMessage.includes('minor')
               console.log('Has major changes in latest commit:', hasMajor)
               console.log('Has breaking changes in latest commit:', hasBreaking)
               console.log('Has minor changes in latest commit:', hasMinor)
