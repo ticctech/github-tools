@@ -232,8 +232,20 @@ jobs:
             
             const incrementType = await increment()
             console.log('Final increment type:', incrementType)
-            const newVersion = `v${semver.inc(latestTag, incrementType)}`
-            console.log('New version:', newVersion)
+            let newVersion = `v${semver.inc(latestTag, incrementType)}`
+            
+            // For non-main branches, append branch name and short SHA as prerelease identifier
+            const ref = context.ref
+            console.log('Git ref:', ref)
+            
+            if (ref !== 'refs/heads/main') {
+              const branchName = ref.replace('refs/heads/', '').replace(/[^a-zA-Z0-9]/g, '-')
+              const shortSha = context.sha.substring(0, 7)
+              newVersion = `${newVersion}-${branchName}.${shortSha}`
+              console.log('Non-main branch detected, using prerelease version:', newVersion)
+            }
+            
+            console.log('Final version:', newVersion)
             return newVersion
           result-encoding: string
 
@@ -287,7 +299,9 @@ jobs:
             ghcr.io/${{ github.repository }}:latest
 
       # create release (incl. underlying tag)
+      # Only create release when on main branch to avoid tagging wrong branch
       - name: Create release
+        if: github.ref == 'refs/heads/main'
         uses: actions/github-script@v6
         with:
           script: |
