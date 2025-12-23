@@ -5,6 +5,18 @@
 name: Deploy Container App
 
 on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: |
+          The environment to deploy to.
+      func-name:
+        required: true
+        type: string
+        description: |
+          The function name to deploy.
   workflow_call:
     inputs:
       environment:

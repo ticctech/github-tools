@@ -5,6 +5,13 @@
 name: Build and deploy static web app
 
 on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: |
+          The environment to deploy to.
   workflow_call:
     inputs:
       environment:
