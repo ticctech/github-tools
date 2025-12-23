@@ -107,57 +107,32 @@ jobs:
       - name: Build image if missing
         id: build-if-missing
         if: steps.check-image.outputs.result == 'false'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log('Image not found in GHCR, triggering build...')
-            
-            // Create a repository dispatch to trigger build workflow
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'build-go.yaml',
-              ref: context.ref,
-            })
-            
-            console.log('Build workflow triggered, waiting for completion...')
-            return 'triggered'
-
-      - name: Wait for build completion
-        if: steps.build-if-missing.outputs.result == 'triggered'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const maxWaitTime = 15 * 60 * 1000 // 15 minutes
-            const pollInterval = 30 * 1000 // 30 seconds
-            const startTime = Date.now()
-            
-            while (Date.now() - startTime < maxWaitTime) {
-              console.log('Waiting for build to complete...')
-              
-              // Check recent workflow runs
-              const runs = await github.rest.actions.listWorkflowRuns({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'build-go.yaml',
-                per_page: 5
-              })
-              
-              const recentRun = runs.data.workflow_runs[0]
-              if (recentRun && recentRun.status === 'completed') {
-                if (recentRun.conclusion === 'success') {
-                  console.log('Build completed successfully')
-                  return 'success'
-                } else {
-                  throw new Error(`Build failed with conclusion: ${recentRun.conclusion}`)
-                }
-              }
-              
-              // Wait before next check
-              await new Promise(resolve => setTimeout(resolve, pollInterval))
-            }
-            
-            throw new Error('Build timed out after 15 minutes')
+        run: |
+          echo "Image not found in GHCR, building inline..."
+          
+          # Set up Docker Buildx
+          docker buildx create --use --name builder --driver docker-container
+          
+          # Login to GitHub Container Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Build and push the image
+          VERSION="${{ steps.version.outputs.result }}"
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --tag "ghcr.io/${REPO_LOWER}:${VERSION}" \
+            --tag "ghcr.io/${REPO_LOWER}:latest" \
+            --build-arg BUF_USER="${{ secrets.BUF_USER }}" \
+            --build-arg BUF_PAT="${{ secrets.BUF_PAT }}" \
+            --build-arg GH_USER="${{ secrets.GH_USER }}" \
+            --build-arg GH_PAT="${{ secrets.GH_PAT }}" \
+            --build-arg GH_ORG="${{ github.repository_owner }}" \
+            .
+          
+          echo "Build completed successfully"
 
       - name: Azure login
         uses: azure/login@v1
