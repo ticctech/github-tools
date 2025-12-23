@@ -145,8 +145,8 @@ jobs:
             --tag "ghcr.io/${REPO_LOWER}:latest" \
             --build-arg BUF_USER="${{ secrets.BUF_USER }}" \
             --build-arg BUF_PAT="${{ secrets.BUF_PAT }}" \
-            --build-arg GH_USER="${{ secrets.GH_USER }}" \
-            --build-arg GH_PAT="${{ secrets.GH_PAT }}" \
+            --build-arg GH_USER="${{ secrets.ACTIONS_USER }}" \
+            --build-arg GH_PAT="${{ secrets.ACTIONS_TOKEN }}" \
             --build-arg GH_ORG="${{ github.repository_owner }}" \
             .
           
