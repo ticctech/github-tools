@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: Set env
         id: env
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             switch('${{ inputs.environment }}') {
@@ -70,13 +70,13 @@ jobs:
           result-encoding: string
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Latest release
         id: version
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             if ('${{ inputs.tag }}' === '') {
@@ -92,7 +92,7 @@ jobs:
 
       - name: Check if image exists in GHCR
         id: check-image
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const version = '${{ steps.version.outputs.result }}'
@@ -154,7 +154,7 @@ jobs:
           echo "Build completed successfully"
 
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -162,7 +162,7 @@ jobs:
 
       - name: Set deployment parameters
         id: deployment-params
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const isTest = '${{ inputs.environment }}' === 'test'
@@ -218,7 +218,7 @@ jobs:
 
       - name: API backend params
         id: backend
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const outputs = JSON.parse('${{ env.ca_outputs }}')
