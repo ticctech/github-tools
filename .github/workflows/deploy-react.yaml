@@ -34,7 +34,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 50
+          fetch-tags: true
 
       - name: Generate version
         id: version
@@ -74,12 +75,24 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "refs/tags/${{ steps.version.outputs.new_tag }}",
-              sha: context.sha
-            })
+            const tagName = "${{ steps.version.outputs.new_tag }}";
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tagName}`
+              });
+              core.info(`Tag ${tagName} already exists at this SHA, skipping`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tagName}`,
+                sha: context.sha
+              });
+              core.info(`Created tag ${tagName}`);
+            }
 
       - name: Create GitHub Release
         # Only create releases for production deployments
