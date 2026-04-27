@@ -45,9 +45,12 @@ jobs:
           fetch-depth: 0
 
       - name: Setup buf
-        uses: bufbuild/buf-setup-action@v1
+        uses: bufbuild/buf-action@v1
         with:
+          version: 1.50.0
+          token: ${{ secrets.BUF_PAT }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          setup_only: true
 
       # most recent release
       - name: Latest release
@@ -124,30 +127,20 @@ jobs:
             return 'false'
           result-encoding: string
 
-      # check for breaking changes in protos
-      - name: Fail when breaking proto change
-        if: |
-          !(contains(steps.prev-tag.outputs.result, 'alpha') ||
-          steps.breaking-check.outputs.result == 'true' ||
-          inputs.skip_breaking_check == true)
-        uses: bufbuild/buf-breaking-action@v1
+      # lint, breaking-change check, and push to BSR (single consolidated action)
+      - name: Buf lint, breaking, push
+        uses: bufbuild/buf-action@v1
         with:
-          against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
-          buf_token: ${{ secrets.BUF_PAT }}
-
-      #  lint proto files
-      - name: Lint protos
-        uses: bufbuild/buf-lint-action@v1
-        with:
+          version: 1.50.0
+          token: ${{ secrets.BUF_PAT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           input: proto
-          buf_token: ${{ secrets.BUF_PAT }}
-
-      # buf push --tag <TAG_NAME>
-      - name: Push to Buf Schema Registry
-        uses: bufbuild/buf-push-action@v1
-        with:
-          input: proto
-          buf_token: ${{ secrets.BUF_PAT }}
+          lint: true
+          format: false
+          pr_comment: false
+          breaking: ${{ !contains(steps.prev-tag.outputs.result, 'alpha') && steps.breaking-check.outputs.result != 'true' && !inputs.skip_breaking_check }}
+          breaking_against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
+          push: true
 
       # increment repo version tag
       - run: npm install semver json-diff
@@ -281,7 +274,11 @@ jobs:
             } else {
               const incrementType = await increment()
               console.log('Final increment type:', incrementType)
-              newVersion = `v${semver.inc(baseVersion, incrementType)}`
+              const incremented = semver.inc(baseVersion, incrementType)
+              if (!incremented) {
+                throw new Error(`semver.inc returned null for baseVersion="${baseVersion}" incrementType="${incrementType}". Refusing to publish v${incremented}.`)
+              }
+              newVersion = `v${incremented}`
             }
             
             // For non-main branches, append branch name and timestamp as prerelease identifier
@@ -317,7 +314,6 @@ jobs:
           go test -v ./...
 
       # set up docker buildx
-      - uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -344,6 +340,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.curr-tag.outputs.result }}
             ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # create release (incl. underlying tag)
       # Only create release when on main branch to avoid tagging wrong branch
