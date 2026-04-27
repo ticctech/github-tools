@@ -69,11 +69,6 @@ jobs:
             }
           result-encoding: string
 
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Latest release
         id: version
         uses: actions/github-script@v8
@@ -122,6 +117,14 @@ jobs:
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only checked out for the rare fallback path where the image is missing
+      # from GHCR and must be built inline.
+      - name: Checkout repository
+        if: steps.check-image.outputs.result == 'false'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Build image if missing
         id: build-if-missing
@@ -245,4 +248,60 @@ jobs:
             --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-api-backend/versions/1.0" \
             --parameters "env=${{ steps.env.outputs.result }}" \
             --parameters ${{ steps.backend.outputs.result }}
+
+      - name: Write deployment summary
+        if: always()
+        env:
+          STATUS: ${{ job.status }}
+          ENV_INPUT: ${{ inputs.environment }}
+          ENV_SHORT: ${{ steps.env.outputs.result }}
+          SERVICE: ${{ github.event.repository.name }}
+          IMAGE_TAG: ${{ steps.version.outputs.result }}
+          IMAGE_EXISTED: ${{ steps.check-image.outputs.result }}
+          CA_OUTPUTS: ${{ env.ca_outputs }}
+          IS_TEST: ${{ inputs.environment == 'test' }}
+        run: |
+          status_icon="✅"
+          [ "$STATUS" != "success" ] && status_icon="❌"
+          rg="app-ticc-${ENV_SHORT}-ae-rg"
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:${IMAGE_TAG}"
+          ca_id=$(echo "$CA_OUTPUTS" | jq -r '.containerAppId.value // "—"')
+          ca_fqdn=$(echo "$CA_OUTPUTS" | jq -r '.containerAppFqdn.value // "—"')
+          [ "$IMAGE_EXISTED" = "true" ] && img_built="reused from GHCR" || img_built="built inline (fallback)"
+
+          {
+            echo "## ${status_icon} Deployment summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Status | \`$STATUS\` |"
+            echo "| Service | \`$SERVICE\` |"
+            echo "| Environment | \`$ENV_INPUT\` (→ \`env=$ENV_SHORT\`) |"
+            echo "| Image | \`$image\` |"
+            echo "| Image source | $img_built |"
+            echo "| Resource group | \`$rg\` |"
+            echo "| Container App | \`ca-$SERVICE\` |"
+            echo "| FQDN | https://$ca_fqdn |"
+            echo "| Region | australiaeast |"
+            echo "| Triggered by | \`$GITHUB_TRIGGERING_ACTOR\` (event: \`$GITHUB_EVENT_NAME\`) |"
+            echo "| Commit | \`$GITHUB_SHA\` |"
+            echo ""
+            echo "### ARM deployments"
+            echo "| Deployment | Template spec | Result |"
+            echo "|---|---|---|"
+            if [ "$IS_TEST" = "true" ]; then
+              echo "| \`$SERVICE-test-revision\` | \`ts-container-app-revision/1.0\` | $status_icon |"
+            else
+              tpl_ver="1.0"; [ "$ENV_INPUT" = "development" ] && tpl_ver="1.1"
+              echo "| \`$SERVICE\` | \`ts-container-app/$tpl_ver\` | $status_icon |"
+            fi
+            echo "| \`$SERVICE-api-backend\` | \`ts-api-backend/1.0\` | $status_icon |"
+            echo ""
+            echo "<details><summary>Container App resource ID</summary>"
+            echo ""
+            echo "\`\`\`"
+            echo "$ca_id"
+            echo "\`\`\`"
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
 
