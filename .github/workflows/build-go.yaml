@@ -140,7 +140,10 @@ jobs:
           pr_comment: false
           breaking: ${{ !contains(steps.prev-tag.outputs.result, 'alpha') && steps.breaking-check.outputs.result != 'true' && !inputs.skip_breaking_check }}
           breaking_against: https://github.com/${{ github.repository }}.git#tag=${{ steps.prev-tag.outputs.result }}
-          push: true
+          # Skip BSR push on PR builds: GitHub Actions checks out a synthetic merge
+          # commit that isn't on any branch, so `buf push --git-metadata` fails with
+          # "no tags or branches found for HEAD". Lint and breaking checks still run.
+          push: ${{ github.event_name != 'pull_request' }}
 
       # increment repo version tag
       - run: npm install semver json-diff
