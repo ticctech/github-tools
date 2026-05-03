@@ -59,10 +59,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+
+      # Portal gitignores package-lock.json, so we can't use setup-node's
+      # built-in cache (which requires a lockfile). Cache node_modules
+      # directly, keyed on package.json. npm install (not ci) for the
+      # same reason — no lockfile to honour.
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node20-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build
         run: npm run build-${{ inputs.environment }}
