@@ -44,7 +44,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           DRY_RUN: true
-          PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+          PRERELEASE: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/release/') }}
           DEFAULT_BUMP: patch
           MAJOR_STRING_TOKEN: "MAJOR"
           MINOR_STRING_TOKEN: "MINOR"
