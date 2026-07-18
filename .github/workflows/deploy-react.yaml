@@ -53,8 +53,14 @@ jobs:
       - name: npm config
         env:
           BUF_NPM_TOKEN: ${{ secrets.BUF_NPM_TOKEN }}
+          # GitHub Packages (@ticctech scope, e.g. @ticctech/ory). The calling
+          # repo's GITHUB_TOKEN needs read access to the package (grant via the
+          # package's "Manage Actions access" settings). Inert for apps whose
+          # .npmrc doesn't map a scope to npm.pkg.github.com.
+          GH_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "//buf.build/gen/npm/v1/:_authToken=$BUF_NPM_TOKEN" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GH_PACKAGES_TOKEN" >> .npmrc
 
       - uses: actions/setup-node@v5
         with:
