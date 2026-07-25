@@ -43,7 +43,7 @@ resource managedId 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-
 // -----------------------------
 // Deploy Container App
 // -----------------------------
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2025-01-01' = {
   name: 'ca-${appName}'
   location: location
   identity: {
@@ -61,6 +61,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
         appPort: 8080
         appProtocol: 'http'
         enabled: true
+        httpMaxRequestSize: 20
       }
       ingress: {
         external: true
