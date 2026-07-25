@@ -209,7 +209,7 @@ jobs:
               --name "${{ github.event.repository.name }}" \
               --resource-group "app-ticc-${{ steps.env.outputs.result }}-ae-rg" \
               --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-              --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/${{ inputs.environment == 'development' && '1.1' || '1.0' }}" \
+              --template-spec "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/app-ticc-${{ steps.env.outputs.result }}-ae-rg/providers/Microsoft.Resources/templateSpecs/ts-container-app/versions/${{ inputs.environment == 'development' && '1.2' || '1.0' }}" \
               --parameters "env=${{ steps.env.outputs.result }}" \
               --parameters "appName=${{ github.event.repository.name }}" \
               --parameters "imageTag=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.result }}" \
@@ -292,7 +292,7 @@ jobs:
             if [ "$IS_TEST" = "true" ]; then
               echo "| \`$SERVICE-test-revision\` | \`ts-container-app-revision/1.0\` | $status_icon |"
             else
-              tpl_ver="1.0"; [ "$ENV_INPUT" = "development" ] && tpl_ver="1.1"
+              tpl_ver="1.0"; [ "$ENV_INPUT" = "development" ] && tpl_ver="1.2"
               echo "| \`$SERVICE\` | \`ts-container-app/$tpl_ver\` | $status_icon |"
             fi
             echo "| \`$SERVICE-api-backend\` | \`ts-api-backend/1.0\` | $status_icon |"

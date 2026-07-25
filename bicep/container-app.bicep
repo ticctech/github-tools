@@ -97,12 +97,6 @@ resource containerApp 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: any('0.5')
             memory: '1Gi'
           }
-          env: [
-            {
-              name: 'APP_ENV'
-              value: env
-            }
-          ]
         }
       ]
       scale: {
