@@ -332,7 +332,9 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
-          # context: .
+          # Use the local checkout (already fetched above) instead of the
+          # default remote git context, which re-clones and fetches every tag.
+          context: .
           build-args: |
             BUF_USER=${{ secrets.BUF_USER }}
             BUF_PAT=${{ secrets.BUF_PAT }}
