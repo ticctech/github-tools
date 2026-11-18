@@ -35,6 +35,11 @@ on:
         type: string
         default: ''
         description: Overrides VITE_APP_HOST for this build (Vite gives existing env vars priority over .env files).
+      node_version:
+        required: false
+        type: string
+        default: '20'
+        description: Node.js version to install, test and build with. Defaults to 20, as before.
       # tag:
       #   type: string
       #   description: |
@@ -83,7 +88,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: ${{ inputs.node_version || '20' }}
           cache: 'npm'
 
       - name: Install dependencies
